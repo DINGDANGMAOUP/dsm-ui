@@ -5,16 +5,17 @@ import { cookies } from "next/headers";
 
 // 登录处理程序
 export async function POST(req: NextRequest) {
+  const cookieStore = await cookies();
   try {
     // 从请求中获取登录信息
     const body = await req.json();
 
     // 转发请求到SpringBoot后端
     const response = await serverApi.post<LoginResponse>("/auth/login", body);
+
     // 如果登录成功，设置令牌到Cookie
     if (response.success && response.data) {
       const { accessToken, refreshToken } = response.data;
-      const cookieStore = await cookies();
       // 设置访问令牌
       cookieStore.set("access_token", accessToken, {
         httpOnly: false, // 允许JavaScript访问，便于客户端获取
@@ -32,12 +33,14 @@ export async function POST(req: NextRequest) {
         maxAge: 60 * 60 * 24 * 7, // 7天
         path: "/",
       });
+    } else {
+      console.log("API路由: 登录失败", response);
     }
 
     // 返回响应
     return NextResponse.json(response);
   } catch (error: any) {
-    console.error("登录失败", error);
+    console.error("API路由: 登录处理失败", error);
     return NextResponse.json(
       {
         code: 500,

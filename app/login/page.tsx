@@ -7,12 +7,13 @@ import { LoginRequest } from "@/lib/types";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, error } = useAuth();
+  const { login, error: authError } = useAuth();
   const [formData, setFormData] = useState<LoginRequest>({
     username: "",
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -22,25 +23,32 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
+      console.log("提交登录表单:", formData);
       await login(formData);
+      console.log("登录成功，准备跳转到仪表盘");
       router.push("/dashboard");
-    } catch (error) {
-      console.error("登录失败", error);
+    } catch (err: any) {
+      console.error("登录页面处理登录失败:", err);
+      setError(err.message || "登录失败，请稍后再试");
     } finally {
       setIsLoading(false);
     }
   };
+
+  // 显示来自Auth上下文的错误或本地错误
+  const displayError = error || authError;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md dark:bg-gray-800">
         <h1 className="mb-6 text-center text-2xl font-bold text-gray-900 dark:text-white">登录</h1>
 
-        {error && (
+        {displayError && (
           <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-400">
-            {error}
+            {displayError}
           </div>
         )}
 

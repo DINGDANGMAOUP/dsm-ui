@@ -1,22 +1,33 @@
 // 根据环境初始化mock服务
 async function initMocks() {
-  console.log("开始初始化Mock服务...");
-  console.log(`环境: ${process.env.NODE_ENV}`);
-  console.log(`是否服务器端: ${typeof window === "undefined"}`);
+  console.log("Mock模块: 开始初始化Mock服务...");
+  console.log(`Mock模块: 环境: ${process.env.NODE_ENV}`);
 
-  // 只在服务器端和开发环境中启动mock
-  if (process.env.NODE_ENV === "development" && process.env.NEXT_RUNTIME === "nodejs") {
+  // 只在开发环境中启动mock
+  if (process.env.NODE_ENV === "development") {
     try {
-      console.log("正在导入服务器端Mock...");
+      console.log("Mock模块: 正在导入服务器端Mock...");
       const { server } = await import("./server");
-      console.log("正在启动服务器端Mock...");
-      server.listen();
-      console.log("🔶 服务器端Mock服务已启动");
+      console.log("Mock模块: 正在启动服务器端Mock...");
+      server.listen({ onUnhandledRequest: "bypass" });
+      console.log("Mock模块: 🔶 服务器端Mock服务已启动");
+
+      // 添加关闭处理
+      if (typeof process !== "undefined") {
+        process.on("SIGTERM", () => {
+          console.log("Mock模块: 关闭Mock服务...");
+          server.close();
+        });
+      }
+
+      return true;
     } catch (error) {
-      console.error("启动Mock服务失败:", error);
+      console.error("Mock模块: 启动Mock服务失败:", error);
+      return false;
     }
   } else {
-    console.log("不满足启动Mock服务的条件,跳过初始化");
+    console.log("Mock模块: 非开发环境，跳过初始化");
+    return false;
   }
 }
 

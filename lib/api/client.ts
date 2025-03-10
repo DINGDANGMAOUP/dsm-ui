@@ -32,6 +32,8 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error: AxiosError) => {
+    console.error("API请求失败:", error);
+
     // 如果是401错误，重定向到登录页
     if (error.response?.status === 401) {
       // 清除本地存储的令牌
@@ -43,23 +45,75 @@ apiClient.interceptors.response.use(
       }
     }
 
-    return Promise.reject(error);
+    // 返回一个标准化的错误响应，而不是直接抛出错误
+    return Promise.resolve({
+      data: {
+        code: error.response?.status || 500,
+        message: error.message || "服务器错误",
+        success: false,
+        data: null,
+      },
+    });
   }
 );
 
 // 封装请求方法
 export const api = {
   get: <T>(url: string, config?: AxiosRequestConfig) =>
-    apiClient.get<ApiResponse<T>>(url, config).then((response) => response.data),
+    apiClient
+      .get<ApiResponse<T>>(url, config)
+      .then((response) => response.data)
+      .catch((error) => {
+        console.error(`GET ${url} 失败:`, error);
+        return {
+          code: 500,
+          message: error.message || "请求失败",
+          success: false,
+          data: null as T,
+        } as ApiResponse<T>;
+      }),
 
   post: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
-    apiClient.post<ApiResponse<T>>(url, data, config).then((response) => response.data),
+    apiClient
+      .post<ApiResponse<T>>(url, data, config)
+      .then((response) => response.data)
+      .catch((error) => {
+        console.error(`POST ${url} 失败:`, error);
+        return {
+          code: 500,
+          message: error.message || "请求失败",
+          success: false,
+          data: null as T,
+        } as ApiResponse<T>;
+      }),
 
   put: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
-    apiClient.put<ApiResponse<T>>(url, data, config).then((response) => response.data),
+    apiClient
+      .put<ApiResponse<T>>(url, data, config)
+      .then((response) => response.data)
+      .catch((error) => {
+        console.error(`PUT ${url} 失败:`, error);
+        return {
+          code: 500,
+          message: error.message || "请求失败",
+          success: false,
+          data: null as T,
+        } as ApiResponse<T>;
+      }),
 
   delete: <T>(url: string, config?: AxiosRequestConfig) =>
-    apiClient.delete<ApiResponse<T>>(url, config).then((response) => response.data),
+    apiClient
+      .delete<ApiResponse<T>>(url, config)
+      .then((response) => response.data)
+      .catch((error) => {
+        console.error(`DELETE ${url} 失败:`, error);
+        return {
+          code: 500,
+          message: error.message || "请求失败",
+          success: false,
+          data: null as T,
+        } as ApiResponse<T>;
+      }),
 };
 
 export default api;

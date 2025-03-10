@@ -9,24 +9,24 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 调试信息
-  console.log(`处理路径: ${pathname}`);
-  console.log(`Cookie: ${request.cookies.toString()}`);
+  console.log(`中间件: 处理路径: ${pathname}`);
+  console.log(`中间件: Cookie: ${request.cookies.toString()}`);
 
   // 如果是API请求
   if (pathname.startsWith("/api/")) {
     // 如果是公共API，直接放行
     if (PUBLIC_API_PATHS.some((path) => pathname.startsWith(path))) {
-      console.log("公共API，放行");
+      console.log("中间件: 公共API，放行");
       return NextResponse.next();
     }
 
     // 获取访问令牌
     const accessToken = request.cookies.get("access_token")?.value;
-    console.log(`API请求，令牌: ${accessToken ? "存在" : "不存在"}`);
+    console.log(`中间件: API请求，令牌: ${accessToken ? "存在" : "不存在"}`);
 
     // 如果没有访问令牌，返回401
     if (!accessToken) {
-      console.log("API请求未授权，返回401");
+      console.log("中间件: API请求未授权，返回401");
       return NextResponse.json(
         {
           code: 401,
@@ -40,6 +40,7 @@ export async function middleware(request: NextRequest) {
     // 将访问令牌添加到请求头
     const headers = new Headers(request.headers);
     headers.set("Authorization", `Bearer ${accessToken}`);
+    console.log("中间件: 添加Authorization头");
 
     // 继续处理请求
     return NextResponse.next({
@@ -53,11 +54,11 @@ export async function middleware(request: NextRequest) {
   if (AUTH_PATHS.some((path) => pathname.startsWith(path))) {
     // 获取访问令牌
     const accessToken = request.cookies.get("access_token")?.value;
-    console.log(`页面请求 ${pathname}，令牌: ${accessToken ? "存在" : "不存在"}`);
+    console.log(`中间件: 页面请求 ${pathname}，令牌: ${accessToken ? "存在" : "不存在"}`);
 
     // 如果没有访问令牌，重定向到登录页
     if (!accessToken) {
-      console.log(`重定向到登录页，原路径: ${pathname}`);
+      console.log(`中间件: 重定向到登录页，原路径: ${pathname}`);
       return NextResponse.redirect(new URL("/login", request.url));
     }
   }

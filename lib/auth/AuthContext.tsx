@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useEffect, useState } from "react";
-import { User, LoginRequest } from "../types";
+import { User, LoginRequest, LoginResponse } from "../types";
 import api from "../api/client";
 import { getAccessToken, isAuthenticated, removeTokens } from "./token";
 
@@ -42,9 +42,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (response.success && response.data) {
         return response.data;
       }
+      console.error("获取用户信息失败:", response.message);
       return null;
-    } catch (error) {
-      console.error("获取用户信息失败", error);
+    } catch (error: any) {
+      console.error("获取用户信息失败:", error);
       return null;
     }
   };
@@ -55,8 +56,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       const userData = await fetchUserInfo();
       setUser(userData);
-    } catch (error) {
-      console.error("刷新用户信息失败", error);
+    } catch (error: any) {
+      console.error("刷新用户信息失败:", error);
       setError("刷新用户信息失败");
     } finally {
       setIsLoading(false);
@@ -69,9 +70,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       setError(null);
 
-      const response = await api.post("/auth/login", data);
+      console.log("开始登录请求...");
+      const response = await api.post<LoginResponse>("/auth/login", data);
+      console.log("登录响应:", response);
+
+      if (!response) {
+        throw new Error("登录请求失败，未收到响应");
+      }
 
       if (response.success && response.data) {
+        console.log("登录成功，保存令牌...");
         // 令牌已由服务端设置到Cookie，但为了兼容性，也保存到localStorage
         if (
           typeof window !== "undefined" &&
@@ -83,13 +91,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
 
         // 获取用户信息
+        console.log("获取用户信息...");
         const userData = await fetchUserInfo();
-        setUser(userData);
+        if (userData) {
+          console.log("用户信息获取成功:", userData);
+          setUser(userData);
+        } else {
+          console.error("用户信息获取失败");
+          throw new Error("获取用户信息失败");
+        }
       } else {
+        console.error("登录失败:", response.message);
         throw new Error(response.message || "登录失败");
       }
     } catch (error: any) {
-      console.error("登录失败", error);
+      console.error("登录过程中发生错误:", error);
       setError(error.message || "登录失败");
       throw error;
     } finally {
@@ -113,8 +129,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
       }
-    } catch (error) {
-      console.error("登出失败", error);
+    } catch (error: any) {
+      console.error("登出失败:", error);
     } finally {
       setIsLoading(false);
     }
@@ -132,8 +148,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const userData = await fetchUserInfo();
           setUser(userData);
         }
-      } catch (error) {
-        console.error("初始化认证状态失败", error);
+      } catch (error: any) {
+        console.error("初始化认证状态失败:", error);
       } finally {
         setIsLoading(false);
       }
