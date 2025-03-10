@@ -12,18 +12,43 @@ const cookieOptions = {
 
 // 获取访问令牌
 export const getAccessToken = (): string | undefined => {
-  return Cookies.get(ACCESS_TOKEN_KEY);
+  // 尝试从Cookie中获取
+  const token = Cookies.get(ACCESS_TOKEN_KEY);
+  if (token) return token;
+
+  // 如果Cookie中没有，尝试从localStorage中获取（兼容性处理）
+  if (typeof window !== "undefined") {
+    return localStorage.getItem(ACCESS_TOKEN_KEY) || undefined;
+  }
+
+  return undefined;
 };
 
 // 获取刷新令牌
 export const getRefreshToken = (): string | undefined => {
-  return Cookies.get(REFRESH_TOKEN_KEY);
+  // 尝试从Cookie中获取
+  const token = Cookies.get(REFRESH_TOKEN_KEY);
+  if (token) return token;
+
+  // 如果Cookie中没有，尝试从localStorage中获取（兼容性处理）
+  if (typeof window !== "undefined") {
+    return localStorage.getItem(REFRESH_TOKEN_KEY) || undefined;
+  }
+
+  return undefined;
 };
 
 // 移除令牌
 export const removeTokens = (): void => {
-  Cookies.remove(ACCESS_TOKEN_KEY);
-  Cookies.remove(REFRESH_TOKEN_KEY);
+  // 从Cookie中移除
+  Cookies.remove(ACCESS_TOKEN_KEY, { path: "/" });
+  Cookies.remove(REFRESH_TOKEN_KEY, { path: "/" });
+
+  // 从localStorage中移除（兼容性处理）
+  if (typeof window !== "undefined") {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  }
 };
 
 // 检查是否已认证

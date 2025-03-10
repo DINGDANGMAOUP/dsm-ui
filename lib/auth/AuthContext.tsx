@@ -72,7 +72,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await api.post("/auth/login", data);
 
       if (response.success && response.data) {
-        // 令牌已由服务端设置到Cookie
+        // 令牌已由服务端设置到Cookie，但为了兼容性，也保存到localStorage
+        if (
+          typeof window !== "undefined" &&
+          response.data.accessToken &&
+          response.data.refreshToken
+        ) {
+          localStorage.setItem("access_token", response.data.accessToken);
+          localStorage.setItem("refresh_token", response.data.refreshToken);
+        }
+
         // 获取用户信息
         const userData = await fetchUserInfo();
         setUser(userData);
@@ -98,6 +107,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // 清除用户信息
       setUser(null);
+
+      // 清除localStorage中的令牌
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+      }
     } catch (error) {
       console.error("登出失败", error);
     } finally {

@@ -15,22 +15,22 @@ export async function POST(req: NextRequest) {
     // 如果刷新成功，设置新的令牌到Cookie
     if (response.success && response.data) {
       const { accessToken, refreshToken } = response.data;
-      const cookieStore = cookies();
 
+      const cookieStore = await cookies();
       // 设置访问令牌
       cookieStore.set("access_token", accessToken, {
-        httpOnly: true,
+        httpOnly: false, // 允许JavaScript访问，便于客户端获取
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 60 * 15, // 15分钟
+        sameSite: "lax", // 允许跨站点请求
+        maxAge: 60 * 60 * 24, // 24小时
         path: "/",
       });
 
       // 设置刷新令牌
       cookieStore.set("refresh_token", refreshToken, {
-        httpOnly: true,
+        httpOnly: true, // 不允许JavaScript访问，提高安全性
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax", // 允许跨站点请求
         maxAge: 60 * 60 * 24 * 7, // 7天
         path: "/",
       });

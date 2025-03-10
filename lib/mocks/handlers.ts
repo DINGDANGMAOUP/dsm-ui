@@ -5,6 +5,9 @@ import { verify, sign } from "jsonwebtoken";
 // 定义SpringBoot API基础URL
 const SPRING_BOOT_API_URL = process.env.SPRING_BOOT_API_URL || "http://localhost:8080/api";
 
+// 打印配置信息
+console.log(`🔧 Mock配置: SPRING_BOOT_API_URL = ${SPRING_BOOT_API_URL}`);
+
 // JWT密钥（仅用于开发环境）
 const JWT_SECRET = "mock-jwt-secret-key";
 const JWT_REFRESH_SECRET = "mock-jwt-refresh-secret-key";
@@ -42,9 +45,13 @@ const refreshTokens: Record<string, string> = {};
 
 // 生成访问令牌
 const generateAccessToken = (user: User) => {
-  return sign({ sub: user.id, username: user.username, role: user.role }, JWT_SECRET, {
-    expiresIn: "15m",
-  });
+  return sign(
+    { sub: user.id, username: user.username, role: user.role, permissions: user.permissions },
+    JWT_SECRET,
+    {
+      expiresIn: "15m",
+    }
+  );
 };
 
 // 生成刷新令牌
@@ -79,18 +86,23 @@ const createErrorResponse = (message: string, code = 400): ApiResponse => {
 export const handlers = [
   // 登录接口
   http.post(`${SPRING_BOOT_API_URL}/auth/login`, async ({ request }) => {
+    console.log("🔑 处理登录请求");
     await delay(500); // 模拟网络延迟
 
     const body = (await request.json()) as { username: string; password: string };
     const { username, password } = body;
 
+    console.log(`👤 登录用户: ${username}`);
+
     // 简单的用户验证（在实际应用中应使用更安全的方式）
     if (password !== "password") {
+      console.log("❌ 密码错误");
       return HttpResponse.json(createErrorResponse("用户名或密码错误", 401), { status: 401 });
     }
 
     const user = users.find((u) => u.username === username);
     if (!user) {
+      console.log("❌ 用户不存在");
       return HttpResponse.json(createErrorResponse("用户不存在", 401), { status: 401 });
     }
 
@@ -105,11 +117,13 @@ export const handlers = [
       expiresIn: 15 * 60, // 15分钟，单位秒
     };
 
+    console.log("✅ 登录成功");
     return HttpResponse.json(createSuccessResponse(response));
   }),
 
   // 刷新令牌接口
   http.post(`${SPRING_BOOT_API_URL}/auth/refresh`, async ({ request }) => {
+    console.log("🔄 处理刷新令牌请求");
     await delay(300);
 
     const body = (await request.json()) as { refreshToken: string };
@@ -120,13 +134,17 @@ export const handlers = [
       const decoded = verify(refreshToken, JWT_REFRESH_SECRET) as { sub: string };
       const userId = decoded.sub;
 
+      console.log(`👤 刷新用户ID: ${userId}`);
+
       // 检查刷新令牌是否有效
       if (refreshTokens[userId] !== refreshToken) {
+        console.log("❌ 无效的刷新令牌");
         return HttpResponse.json(createErrorResponse("无效的刷新令牌", 401), { status: 401 });
       }
 
       const user = users.find((u) => u.id === userId);
       if (!user) {
+        console.log("❌ 用户不存在");
         return HttpResponse.json(createErrorResponse("用户不存在", 401), { status: 401 });
       }
 
@@ -141,17 +159,21 @@ export const handlers = [
         expiresIn: 15 * 60,
       };
 
+      console.log("✅ 刷新令牌成功");
       return HttpResponse.json(createSuccessResponse(response));
     } catch (error) {
+      console.log("❌ 刷新令牌失败", error);
       return HttpResponse.json(createErrorResponse("无效的刷新令牌", 401), { status: 401 });
     }
   }),
 
   // 获取当前用户信息
   http.get(`${SPRING_BOOT_API_URL}/users/me`, ({ request }) => {
+    console.log("👤 获取当前用户信息");
     const authHeader = request.headers.get("Authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.log("❌ 未授权");
       return HttpResponse.json(createErrorResponse("未授权", 401), { status: 401 });
     }
 
@@ -162,17 +184,21 @@ export const handlers = [
       const user = users.find((u) => u.id === decoded.sub);
 
       if (!user) {
+        console.log("❌ 用户不存在");
         return HttpResponse.json(createErrorResponse("用户不存在", 404), { status: 404 });
       }
 
+      console.log(`✅ 获取用户成功: ${user.username}`);
       return HttpResponse.json(createSuccessResponse(user));
     } catch (error) {
+      console.log("❌ 无效的令牌");
       return HttpResponse.json(createErrorResponse("无效的令牌", 401), { status: 401 });
     }
   }),
 
   // 登出接口
   http.post(`${SPRING_BOOT_API_URL}/auth/logout`, ({ request }) => {
+    console.log("🚪 处理登出请求");
     const authHeader = request.headers.get("Authorization");
 
     if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -185,20 +211,25 @@ export const handlers = [
         // 删除刷新令牌
         if (refreshTokens[userId]) {
           delete refreshTokens[userId];
+          console.log(`✅ 删除用户ID: ${userId}的刷新令牌`);
         }
       } catch (error) {
         // 令牌无效，忽略错误
+        console.log("⚠️ 无效的令牌，忽略");
       }
     }
 
+    console.log("✅ 登出成功");
     return HttpResponse.json(createSuccessResponse(null));
   }),
 
   // 获取用户列表（需要管理员权限）
   http.get(`${SPRING_BOOT_API_URL}/users`, ({ request }) => {
+    console.log("👥 获取用户列表");
     const authHeader = request.headers.get("Authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.log("❌ 未授权");
       return HttpResponse.json(createErrorResponse("未授权", 401), { status: 401 });
     }
 
@@ -209,11 +240,14 @@ export const handlers = [
 
       // 检查权限
       if (decoded.role !== UserRole.ADMIN) {
+        console.log("❌ 没有权限");
         return HttpResponse.json(createErrorResponse("没有权限访问此资源", 403), { status: 403 });
       }
 
+      console.log("✅ 获取用户列表成功");
       return HttpResponse.json(createSuccessResponse(users));
     } catch (error) {
+      console.log("❌ 无效的令牌");
       return HttpResponse.json(createErrorResponse("无效的令牌", 401), { status: 401 });
     }
   }),
