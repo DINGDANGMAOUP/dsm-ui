@@ -20,6 +20,41 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Code Style and Linting
+
+This project uses the following tools for code quality and consistency:
+
+- [ESLint](https://eslint.org/) - For JavaScript/TypeScript linting
+- [Prettier](https://prettier.io/) - For code formatting
+- [Stylelint](https://stylelint.io/) - For CSS/SCSS linting
+- [EditorConfig](https://editorconfig.org/) - For consistent editor settings
+
+### Available Scripts
+
+```bash
+# Lint JavaScript/TypeScript files
+pnpm lint
+
+# Fix ESLint issues
+pnpm lint:fix
+
+# Format code with Prettier
+pnpm format
+
+# Check if files are formatted with Prettier
+pnpm format:check
+
+# Lint CSS/SCSS files
+pnpm stylelint
+
+# Fix Stylelint issues
+pnpm stylelint:fix
+```
+
+### VS Code Integration
+
+This project includes VS Code settings for optimal developer experience. Install the recommended extensions when prompted for the best experience.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
