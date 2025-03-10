@@ -7,17 +7,14 @@ import { cookies } from "next/headers";
 export async function POST(req: NextRequest) {
   try {
     const cookieStore = await cookies();
-    console.log("API路由: 处理刷新令牌请求");
     // 从请求中获取刷新令牌
     const body = await req.json();
 
     // 转发请求到SpringBoot后端
-    console.log("API路由: 转发刷新令牌请求到SpringBoot");
     const response = await serverApi.post<LoginResponse>("/auth/refresh", body);
 
     // 如果刷新成功，设置新的令牌到Cookie
     if (response.success && response.data) {
-      console.log("API路由: 刷新令牌成功，设置新Cookie");
       const { accessToken, refreshToken } = response.data;
 
       // 设置访问令牌
