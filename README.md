@@ -1,22 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DSM-UI
 
-## Getting Started
+这是一个使用Next.js构建的企业级应用前端，包含认证和权限控制。
 
-First, run the development server:
+## 项目架构
+
+项目采用以下架构：
+
+1. **Next.js客户端**：用户界面和客户端逻辑
+2. **Next.js API路由**：作为中间层，转发请求到SpringBoot后端
+3. **SpringBoot后端**：提供API服务
+
+在开发环境中，使用MSW（Mock Service Worker）拦截对SpringBoot后端的请求，并返回模拟数据，以便在没有实际后端的情况下进行开发和测试。
+
+## 认证和权限
+
+项目实现了JWT认证，包含以下功能：
+
+- 用户登录和登出
+- 令牌刷新机制
+- 基于角色和权限的访问控制
+
+用户角色包括：
+
+- 管理员（ADMIN）：拥有所有权限
+- 经理（MANAGER）：拥有读取和写入权限
+- 用户（USER）：仅拥有读取权限
+
+权限包括：
+
+- 读取（READ）
+- 写入（WRITE）
+- 删除（DELETE）
+- 管理（ADMIN）
+
+## 开发环境配置
+
+### 环境变量
+
+创建一个`.env.local`文件，包含以下环境变量：
+
+```
+# SpringBoot API地址
+SPRING_BOOT_API_URL=http://localhost:8080/api
+```
+
+### 启动开发服务器
 
 ```bash
 npm run dev
-# or
+# 或
 yarn dev
-# or
+# 或
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+在开发环境中，MSW会自动拦截对SpringBoot后端的请求，并返回模拟数据。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 测试账号
+
+在开发环境中，可以使用以下测试账号：
+
+- 管理员：username: admin, password: password
+- 经理：username: manager, password: password
+- 普通用户：username: user, password: password
+
+## 生产环境部署
+
+在生产环境中，需要配置实际的SpringBoot后端地址：
+
+```
+SPRING_BOOT_API_URL=https://your-springboot-api.com/api
+```
+
+构建生产版本：
+
+```bash
+npm run build
+# 或
+yarn build
+# 或
+pnpm build
+```
+
+启动生产服务器：
+
+```bash
+npm run start
+# 或
+yarn start
+# 或
+pnpm start
+```
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
