@@ -1,1 +1,30 @@
-@import "./tailwind.css"
+@import "./tailwind.css";
+/* 视图过渡基本设置 */
+::view-transition-group(root) {
+  animation-duration: 0.5s;
+}
+/* 默认行为：禁用默认动画 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  isolation: auto;
+}
+
+/* 暗色到亮色的过渡 - 白色圆点扩散 */
+.to-light::view-transition-old(root) {
+  z-index: 1; /* 旧内容（深色）在底层 */
+}
+
+.to-light::view-transition-new(root) {
+  z-index: 2; /* 新内容（浅色）在上层，通过圆形裁剪显示 */
+}
+
+/* 亮色到暗色的过渡 - 白色区域收缩 */
+.to-dark::view-transition-old(root) {
+  z-index: 2; /* 旧内容（浅色）在上层，通过圆形裁剪收缩 */
+}
+
+.to-dark::view-transition-new(root) {
+  z-index: 1; /* 新内容（深色）在底层 */
+}
