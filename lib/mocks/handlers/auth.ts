@@ -1,8 +1,7 @@
 import { http, HttpResponse, delay } from "msw";
 import { ApiResponse, LoginResponse, Permission, User, UserRole } from "@/lib/types";
 import { verify, sign } from "jsonwebtoken";
-import { SPRING_BOOT_API_URL } from "@/lib/api/server";
-
+import { BASE_URL } from "@/lib/api/server";
 // JWT密钥（仅用于开发环境）
 const JWT_SECRET = "mock-jwt-secret-key";
 const JWT_REFRESH_SECRET = "mock-jwt-refresh-secret-key";
@@ -80,7 +79,7 @@ const createErrorResponse = (message: string, code = 400): ApiResponse => {
 // API请求处理程序 - 拦截对SpringBoot API的请求
 export default [
   // 登录接口
-  http.post(`${SPRING_BOOT_API_URL}/auth/login`, async ({ request }) => {
+  http.post(`${BASE_URL}/auth/login`, async ({ request }) => {
     console.log("🔑 处理登录请求");
     await delay(500); // 模拟网络延迟
 
@@ -117,7 +116,7 @@ export default [
   }),
 
   // 刷新令牌接口
-  http.post(`${SPRING_BOOT_API_URL}/auth/refresh`, async ({ request }) => {
+  http.post(`${BASE_URL}/auth/refresh`, async ({ request }) => {
     console.log("🔄 处理刷新令牌请求");
     await delay(300);
 
@@ -163,7 +162,7 @@ export default [
   }),
 
   // 获取当前用户信息
-  http.get(`${SPRING_BOOT_API_URL}/users/me`, ({ request }) => {
+  http.get(`${BASE_URL}/users/me`, ({ request }) => {
     console.log("👤 获取当前用户信息");
     const authHeader = request.headers.get("Authorization");
 
@@ -192,7 +191,7 @@ export default [
   }),
 
   // 登出接口
-  http.post(`${SPRING_BOOT_API_URL}/auth/logout`, ({ request }) => {
+  http.post(`${BASE_URL}/auth/logout`, ({ request }) => {
     console.log("🚪 处理登出请求");
     const authHeader = request.headers.get("Authorization");
 
@@ -219,7 +218,7 @@ export default [
   }),
 
   // 获取用户列表（需要管理员权限）
-  http.get(`${SPRING_BOOT_API_URL}/users`, ({ request }) => {
+  http.get(`${BASE_URL}/users`, ({ request }) => {
     console.log("👥 获取用户列表");
     const authHeader = request.headers.get("Authorization");
 
