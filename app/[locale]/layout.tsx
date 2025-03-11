@@ -17,15 +17,16 @@ export default async function LocaleLayout({
   params,
 }: Readonly<{
   children: React.ReactNode;
-  params: Promise<{ locale: string }> | { locale: string };
+  params: Promise<{ locale: string }>;
 }>) {
-  // 等待并解析参数
+  // 获取当前语言
   const { locale } = await params;
+  console.log(`LocaleLayout: 当前语言: ${locale}`);
 
   // 验证语言是否受支持
   if (!locales.includes(locale)) {
     // 如果不支持，可以在这里处理，例如重定向到默认语言
-    console.error(`不支持的语言: ${locale}`);
+    console.error(`LocaleLayout: 不支持的语言: ${locale}`);
   }
 
   return (

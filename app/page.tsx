@@ -1,3 +1,4 @@
+import { LocaleLink } from "@/components/locale-link";
 import { ModeToggle } from "@/components/mode-toggle";
 import Link from "next/link";
 
@@ -9,18 +10,18 @@ export default function Home() {
         这是一个使用 Next.js 构建的企业级应用，包含认证和权限控制。
       </p>
       <div className="flex space-x-4">
-        <Link
+        <LocaleLink
           href="/login"
           className="rounded-md bg-blue-600 px-6 py-3 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
         >
           登录
-        </Link>
-        <Link
+        </LocaleLink>
+        <LocaleLink
           href="/dashboard"
           className="rounded-md bg-gray-600 px-6 py-3 text-white hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none"
         >
           仪表盘
-        </Link>
+        </LocaleLink>
       </div>
       <div className="mt-8">
         <ModeToggle />

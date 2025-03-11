@@ -17,11 +17,14 @@ export function useCurrentLocale() {
   const params = useParams();
   const locale = params?.locale as string;
 
+  console.log(`useCurrentLocale: 从路由参数获取语言: ${locale}`);
+
   // 验证语言是否受支持
   if (locale && locales.includes(locale)) {
     return locale;
   }
 
+  console.log(`useCurrentLocale: 使用默认语言: ${defaultLocale}`);
   return defaultLocale;
 }
 
@@ -30,5 +33,8 @@ export function formatLocalePath(path: string, locale: string) {
   // 如果路径已经以 / 开头，则移除
   const cleanPath = path.startsWith("/") ? path.slice(1) : path;
 
-  return `/${locale}/${cleanPath}`;
+  const formattedPath = `/${locale}/${cleanPath}`;
+  console.log(`formatLocalePath: ${path} -> ${formattedPath}`);
+
+  return formattedPath;
 }

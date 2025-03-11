@@ -11,11 +11,14 @@ function getLocale(request: NextRequest): string {
   // 从 cookie 中获取语言设置
   const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value;
   if (cookieLocale && locales.includes(cookieLocale)) {
+    console.log(`中间件: 从 cookie 获取语言: ${cookieLocale}`);
     return cookieLocale;
   }
 
   // 从 Accept-Language 头部获取语言设置
   const acceptLanguage = request.headers.get("accept-language") || "";
+  console.log(`中间件: Accept-Language: ${acceptLanguage}`);
+
   const parsedLocales = acceptLanguage.split(",").map((locale) => {
     const [lang, q = "1"] = locale.split(";q=");
     return { lang: lang.trim(), q: parseFloat(q) };
@@ -29,39 +32,56 @@ function getLocale(request: NextRequest): string {
     const locale = locales.find(
       (l) => lang === l || lang.startsWith(`${l}-`) || l.startsWith(`${lang}-`)
     );
-    if (locale) return locale;
+    if (locale) {
+      console.log(`中间件: 从 Accept-Language 获取语言: ${locale}`);
+      return locale;
+    }
   }
 
+  console.log(`中间件: 使用默认语言: ${defaultLocale}`);
   return defaultLocale;
 }
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
+  const fullPath = `${pathname}${search}`;
+
+  // 调试信息
+  console.log(`中间件: 处理路径: ${fullPath}`);
+  console.log(`中间件: Cookie: ${request.cookies.toString()}`);
 
   // 检查路径中是否已包含语言前缀
   const pathnameHasLocale = locales.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
+  console.log(`中间件: 路径是否包含语言前缀: ${pathnameHasLocale}`);
 
-  // 调试信息
-  console.log(`中间件: 处理路径: ${pathname}`);
-  console.log(`中间件: Cookie: ${request.cookies.toString()}`);
+  // 如果是静态资源，直接放行
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.includes("/favicon.ico") ||
+    pathname.includes("/robots.txt") ||
+    pathname.includes("/mockServiceWorker.js")
+  ) {
+    console.log(`中间件: 静态资源，放行: ${pathname}`);
+    return NextResponse.next();
+  }
 
   // 如果是API请求，不进行语言重定向
   if (pathname.startsWith("/api/")) {
     // 如果是公共API，直接放行
     if (PUBLIC_API_PATHS.some((path) => pathname.startsWith(path))) {
-      console.log("中间件: 公共API，放行");
+      console.log("中间件: 公共API,放行");
       return NextResponse.next();
     }
 
     // 获取访问令牌
     const accessToken = request.cookies.get("access_token")?.value;
-    console.log(`中间件: API请求，令牌: ${accessToken ? "存在" : "不存在"}`);
+    console.log(`中间件: API请求,令牌: ${accessToken ? "存在" : "不存在"}`);
 
     // 如果没有访问令牌，返回401
     if (!accessToken) {
-      console.log("中间件: API请求未授权，返回401");
+      console.log("中间件: API请求未授权,返回401");
       return NextResponse.json(
         {
           code: 401,
@@ -90,6 +110,7 @@ export async function middleware(request: NextRequest) {
     // 检查是否需要认证
     const locale = pathname.split("/")[1];
     const pathWithoutLocale = pathname.replace(`/${locale}`, "");
+    console.log(`中间件: 当前语言: ${locale}, 不含语言的路径: ${pathWithoutLocale}`);
 
     if (AUTH_PATHS.some((path) => pathWithoutLocale.startsWith(path))) {
       // 获取访问令牌
@@ -103,6 +124,7 @@ export async function middleware(request: NextRequest) {
       }
     }
 
+    console.log(`中间件: 路径已包含语言前缀，放行: ${pathname}`);
     return NextResponse.next();
   }
 
@@ -110,18 +132,20 @@ export async function middleware(request: NextRequest) {
   const locale = getLocale(request);
 
   // 构建新的URL，添加语言前缀
-  request.nextUrl.pathname = `/${locale}${pathname === "/" ? "" : pathname}`;
+  const newPathname = `/${locale}${pathname === "/" ? "" : pathname}`;
+  const newUrl = new URL(newPathname, request.url);
+  newUrl.search = search;
+
+  console.log(`中间件: 重定向到带有语言前缀的URL: ${newUrl.pathname}${newUrl.search}`);
 
   // 重定向到带有语言前缀的URL
-  return NextResponse.redirect(request.nextUrl);
+  return NextResponse.redirect(newUrl);
 }
 
 // 配置中间件匹配的路径
 export const config = {
   matcher: [
-    // 匹配所有API路径
-    "/api/:path*",
-    // 匹配所有非静态资源路径
+    // 匹配所有路径，除了静态资源
     "/((?!_next/static|_next/image|favicon.ico|robots.txt|mockServiceWorker.js).*)",
   ],
 };

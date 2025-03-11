@@ -1,6 +1,3 @@
-import fs from "fs";
-import path from "path";
-
 // 支持的语言列表
 export const locales = ["en", "zh"];
 // 默认语言
@@ -49,22 +46,29 @@ const dictionaries: Record<string, Record<string, any>> = {
  */
 export async function loadNamespace(locale: string, namespace: string): Promise<any> {
   try {
+    console.log(`loadNamespace: 加载 ${locale} 的 ${namespace} 命名空间`);
+
     // 获取翻译内容
     const translations = dictionaries[locale]?.[namespace];
 
     if (translations) {
+      console.log(`loadNamespace: 成功加载 ${locale} 的 ${namespace} 命名空间`);
       return translations;
     }
 
     // 如果找不到翻译，尝试使用默认语言
     if (locale !== defaultLocale) {
+      console.log(
+        `loadNamespace: 找不到 ${locale} 的 ${namespace} 命名空间，尝试使用默认语言 ${defaultLocale}`
+      );
       return loadNamespace(defaultLocale, namespace);
     }
 
     // 如果默认语言也找不到，返回空对象
+    console.log(`loadNamespace: 找不到 ${locale} 的 ${namespace} 命名空间，返回空对象`);
     return {};
   } catch (error) {
-    console.error(`Failed to load namespace ${namespace} for locale ${locale}:`, error);
+    console.error(`loadNamespace: 加载 ${locale} 的 ${namespace} 命名空间失败:`, error);
 
     // 如果加载失败，尝试加载默认语言的翻译
     if (locale !== defaultLocale) {
@@ -84,9 +88,11 @@ export async function loadNamespace(locale: string, namespace: string): Promise<
 export async function getDictionary(locale: string): Promise<Dictionary> {
   // 如果请求的语言不存在，则使用默认语言
   const targetLocale = locales.includes(locale) ? locale : defaultLocale;
+  console.log(`getDictionary: 获取 ${targetLocale} 的字典`);
 
   // 如果已经缓存，则直接返回
   if (dictionaryCache[targetLocale]) {
+    console.log(`getDictionary: 使用缓存的 ${targetLocale} 字典`);
     return dictionaryCache[targetLocale];
   }
 
@@ -99,6 +105,7 @@ export async function getDictionary(locale: string): Promise<Dictionary> {
 
   // 缓存结果
   dictionaryCache[targetLocale] = dictionary;
+  console.log(`getDictionary: 缓存 ${targetLocale} 字典`);
 
   return dictionary;
 }

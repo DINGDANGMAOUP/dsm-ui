@@ -32,21 +32,32 @@ export function LanguageSwitcher() {
     return locales.find((locale) => locale.code === currentLocale)?.code || "zh";
   }, [pathname]);
 
+  // 获取当前路径（不含语言前缀）
+  const getCurrentPath = useCallback(() => {
+    const segments = pathname.split("/");
+    // 移除语言前缀
+    segments.splice(1, 1);
+    return segments.join("/") || "/";
+  }, [pathname]);
+
   // 切换语言
   const switchLanguage = useCallback(
     (locale: string) => {
       // 保存语言偏好到 cookie
       Cookies.set("NEXT_LOCALE", locale, { expires: 365 });
 
-      // 从当前路径中提取语言代码后的部分
-      const segments = pathname.split("/");
-      segments[1] = locale;
+      // 获取当前路径（不含语言前缀）
+      const currentPath = getCurrentPath();
 
-      // 构建新路径并导航
-      const newPath = segments.join("/");
+      // 构建新路径
+      const newPath = `/${locale}${currentPath === "/" ? "" : currentPath}`;
+
+      console.log(`切换语言: ${getCurrentLocale()} -> ${locale}, 路径: ${pathname} -> ${newPath}`);
+
+      // 导航到新路径
       router.push(newPath);
     },
-    [pathname, router]
+    [pathname, router, getCurrentPath, getCurrentLocale]
   );
 
   return (

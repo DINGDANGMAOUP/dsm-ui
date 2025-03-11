@@ -8,6 +8,8 @@ const REFRESH_TOKEN_KEY = "refresh_token";
 const cookieOptions = {
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict" as const,
+  path: "/",
+  expires: 1, // 1天
 };
 
 // 获取访问令牌
@@ -36,6 +38,28 @@ export const getRefreshToken = (): string | undefined => {
   }
 
   return undefined;
+};
+
+// 设置访问令牌
+export const setAccessToken = (token: string): void => {
+  // 设置到Cookie
+  Cookies.set(ACCESS_TOKEN_KEY, token, cookieOptions);
+
+  // 同时设置到localStorage（兼容性处理）
+  if (typeof window !== "undefined") {
+    localStorage.setItem(ACCESS_TOKEN_KEY, token);
+  }
+};
+
+// 设置刷新令牌
+export const setRefreshToken = (token: string): void => {
+  // 设置到Cookie
+  Cookies.set(REFRESH_TOKEN_KEY, token, cookieOptions);
+
+  // 同时设置到localStorage（兼容性处理）
+  if (typeof window !== "undefined") {
+    localStorage.setItem(REFRESH_TOKEN_KEY, token);
+  }
 };
 
 // 移除令牌

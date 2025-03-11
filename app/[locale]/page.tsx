@@ -3,16 +3,14 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { LocaleLink } from "@/components/locale-link";
 import { getDictionary } from "@/lib/dictionaries";
 
-export default async function Home({
-  params,
-}: {
-  params: Promise<{ locale: string }> | { locale: string };
-}) {
-  // 等待并解析参数
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+  // 获取当前语言
   const { locale } = await params;
+  console.log(`Home: 当前语言: ${locale}`);
 
   // 获取当前语言的字典
   const dict = await getDictionary(locale);
+  console.log(`Home: 加载字典成功`);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100 dark:bg-gray-900">

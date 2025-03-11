@@ -38,6 +38,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // 获取用户信息
   const fetchUserInfo = async (): Promise<User | null> => {
     try {
+      // 首先检查 localStorage 中是否有用户数据
+      if (typeof window !== "undefined") {
+        const userData = localStorage.getItem("userData");
+        if (userData) {
+          try {
+            const parsedUserData = JSON.parse(userData);
+            // 检查数据是否过期（1小时）
+            const now = Date.now();
+            const isExpired = now - parsedUserData.loginTime > 3600000;
+            if (!isExpired) {
+              console.log("从 localStorage 加载用户数据:", parsedUserData);
+              // 构造一个符合 User 接口的对象
+              return {
+                id: "local",
+                username: parsedUserData.username,
+                email: `${parsedUserData.username}@example.com`,
+                role: parsedUserData.role,
+                permissions: [],
+                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${parsedUserData.username}`,
+              };
+            }
+          } catch (error) {
+            console.error("解析 localStorage 中的用户数据失败:", error);
+          }
+        }
+      }
+
+      // 如果 localStorage 中没有有效的用户数据，则发起 API 请求
       const response = await api.get<User>("/users/me");
       if (response.success && response.data) {
         return response.data;
@@ -124,10 +152,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // 清除用户信息
       setUser(null);
 
-      // 清除localStorage中的令牌
+      // 清除localStorage中的令牌和用户数据
       if (typeof window !== "undefined") {
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
+        localStorage.removeItem("userData");
       }
     } catch (error: any) {
       console.error("登出失败:", error);
