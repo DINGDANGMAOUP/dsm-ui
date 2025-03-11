@@ -10,7 +10,6 @@ export async function POST(req: NextRequest) {
     // 从请求中获取登录信息
     const body = await req.json();
 
-    // 转发请求到SpringBoot后端
     const response = await serverApi.post<LoginResponse>("/auth/login", body);
 
     // 如果登录成功，设置令牌到Cookie
