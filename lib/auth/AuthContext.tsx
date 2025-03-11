@@ -1,11 +1,11 @@
 "use client";
 import React, { createContext, useEffect, useState } from "react";
-import { User, LoginRequest, LoginResponse } from "../types";
+import { UserInfo, LoginRequest, LoginResponse } from "../types";
 import api from "../api/client";
-import { getAccessToken, isAuthenticated, removeTokens } from "./token";
+import { getAccessToken, isAuthenticated, setAccessToken, setRefreshToken } from "./token";
 
 interface AuthContextType {
-  user: User | null;
+  user: UserInfo | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (data: LoginRequest) => Promise<void>;
@@ -31,43 +31,18 @@ interface AuthProviderProps {
 
 // 认证提供者组件
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   // 获取用户信息
-  const fetchUserInfo = async (): Promise<User | null> => {
+  const fetchUserInfo = async (): Promise<UserInfo | null> => {
     try {
-      // 首先检查 localStorage 中是否有用户数据
-      if (typeof window !== "undefined") {
-        const userData = localStorage.getItem("userData");
-        if (userData) {
-          try {
-            const parsedUserData = JSON.parse(userData);
-            // 检查数据是否过期（1小时）
-            const now = Date.now();
-            const isExpired = now - parsedUserData.loginTime > 3600000;
-            if (!isExpired) {
-              console.log("从 localStorage 加载用户数据:", parsedUserData);
-              // 构造一个符合 User 接口的对象
-              return {
-                id: "local",
-                username: parsedUserData.username,
-                email: `${parsedUserData.username}@example.com`,
-                role: parsedUserData.role,
-                permissions: [],
-                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${parsedUserData.username}`,
-              };
-            }
-          } catch (error) {
-            console.error("解析 localStorage 中的用户数据失败:", error);
-          }
-        }
-      }
-
-      // 如果 localStorage 中没有有效的用户数据，则发起 API 请求
-      const response = await api.get<User>("/users/me");
+      console.log("开始获取用户信息...");
+      // 发起API请求获取用户信息
+      const response = await api.get<UserInfo>("/users/me");
       if (response.success && response.data) {
+        console.log("获取用户信息成功:", response.data);
         return response.data;
       }
       console.error("获取用户信息失败:", response.message);
@@ -108,22 +83,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (response.success && response.data) {
         console.log("登录成功，保存令牌...");
-        // 令牌已由服务端设置到Cookie，但为了兼容性，也保存到localStorage
-        if (
-          typeof window !== "undefined" &&
-          response.data.accessToken &&
-          response.data.refreshToken
-        ) {
-          localStorage.setItem("access_token", response.data.accessToken);
-          localStorage.setItem("refresh_token", response.data.refreshToken);
+        // 保存令牌
+        if (response.data.accessToken && response.data.refreshToken) {
+          setAccessToken(response.data.accessToken);
+          setRefreshToken(response.data.refreshToken);
+          console.log("令牌已保存");
         }
 
-        // 获取用户信息
-        console.log("获取用户信息...");
-        const userData = await fetchUserInfo();
-        if (userData) {
-          console.log("用户信息获取成功:", userData);
-          setUser(userData);
+        // 登录成功后，获取用户信息
+        console.log("登录成功，开始获取用户信息...");
+        const userInfo = await fetchUserInfo();
+        if (userInfo) {
+          console.log("用户信息获取成功:", userInfo);
+          setUser(userInfo);
         } else {
           console.error("用户信息获取失败");
           throw new Error("获取用户信息失败");
@@ -151,13 +123,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // 清除用户信息
       setUser(null);
-
-      // 清除localStorage中的令牌和用户数据
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        localStorage.removeItem("userData");
-      }
     } catch (error: any) {
       console.error("登出失败:", error);
     } finally {
@@ -173,9 +138,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         // 检查是否已认证
         if (isAuthenticated()) {
+          console.log("用户已认证，获取用户信息");
           // 获取用户信息
           const userData = await fetchUserInfo();
-          setUser(userData);
+          if (userData) {
+            console.log("初始化用户信息成功:", userData);
+            setUser(userData);
+          } else {
+            console.log("获取用户信息失败，可能需要重新登录");
+          }
+        } else {
+          console.log("用户未认证");
         }
       } catch (error: any) {
         console.error("初始化认证状态失败:", error);

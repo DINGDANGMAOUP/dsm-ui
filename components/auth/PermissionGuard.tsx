@@ -1,11 +1,10 @@
 import React from "react";
-import { Permission, UserRole } from "@/lib/types";
 import { useAuth } from "@/hooks/useAuth";
 
 interface PermissionGuardProps {
   children: React.ReactNode;
-  permissions?: Permission[];
-  roles?: UserRole[];
+  permissions?: string[];
+  authorities?: string[];
   fallback?: React.ReactNode;
 }
 
@@ -16,7 +15,7 @@ interface PermissionGuardProps {
 export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   children,
   permissions = [],
-  roles = [],
+  authorities = [],
   fallback = null,
 }) => {
   const { user, isLoading } = useAuth();
@@ -32,7 +31,9 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   }
 
   // 检查角色权限
-  const hasRequiredRole = roles.length === 0 || roles.includes(user.role);
+  const hasRequiredAuthority =
+    authorities.length === 0 ||
+    authorities.some((authority) => user.authorities.includes(authority));
 
   // 检查具体权限
   const hasRequiredPermissions =
@@ -40,7 +41,7 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
     permissions.every((permission) => user.permissions.includes(permission));
 
   // 如果满足权限要求，显示子元素，否则显示fallback
-  return <>{hasRequiredRole && hasRequiredPermissions ? children : fallback}</>;
+  return <>{hasRequiredAuthority && hasRequiredPermissions ? children : fallback}</>;
 };
 
 export default PermissionGuard;

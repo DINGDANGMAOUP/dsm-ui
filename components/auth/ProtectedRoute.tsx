@@ -1,12 +1,11 @@
 import React, { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { Permission, UserRole } from "@/lib/types";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  permissions?: Permission[];
-  roles?: UserRole[];
+  permissions?: string[];
+  authorities?: string[];
   redirectTo?: string;
 }
 
@@ -17,7 +16,7 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   permissions = [],
-  roles = [],
+  authorities = [],
   redirectTo,
 }) => {
   const router = useRouter();
@@ -61,7 +60,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     // 如果用户已认证，检查权限
     if (!isLoading && user) {
       // 检查角色权限
-      const hasRequiredRole = roles.length === 0 || roles.includes(user.role);
+      const hasRequiredAuthority =
+        authorities.length === 0 ||
+        authorities.some((authority) => user.authorities.includes(authority));
 
       // 检查具体权限
       const hasRequiredPermissions =
@@ -69,13 +70,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         permissions.every((permission) => user.permissions.includes(permission));
 
       // 如果不满足权限要求，重定向到登录页
-      if (!hasRequiredRole || !hasRequiredPermissions) {
+      if (!hasRequiredAuthority || !hasRequiredPermissions) {
         const redirectPath = getRedirectPath();
         console.log(`用户权限不足，重定向到: ${redirectPath}`);
         router.push(redirectPath);
       }
     }
-  }, [isLoading, isAuthenticated, user, roles, permissions, router, pathname]);
+  }, [isLoading, isAuthenticated, user, authorities, permissions, router, pathname]);
 
   // 如果正在加载用户信息，显示加载状态
   if (isLoading) {

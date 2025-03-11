@@ -1,36 +1,130 @@
 import { http, HttpResponse, delay } from "msw";
-import { ApiResponse, LoginResponse, Permission, User, UserRole } from "@/lib/types";
+import { ApiResponse, LoginResponse, UserInfo, MenuItem } from "@/lib/types";
 import { verify, sign } from "jsonwebtoken";
 import { BASE_URL } from "@/lib/api/server";
 // JWT密钥（仅用于开发环境）
 const JWT_SECRET = "mock-jwt-secret-key";
 const JWT_REFRESH_SECRET = "mock-jwt-refresh-secret-key";
 
+// 模拟菜单数据
+const menuItems: MenuItem[] = [
+  {
+    id: 1,
+    parentId: null,
+    menuName: "workplace",
+    orderNum: 0,
+    path: "/workplace",
+    frame: false,
+    cache: true,
+    icon: "monitor-cog",
+  },
+  {
+    id: 2,
+    parentId: 1,
+    menuName: "home",
+    orderNum: 0,
+    path: "/workplace/home",
+    frame: false,
+    cache: true,
+    icon: "house",
+  },
+  {
+    id: 3,
+    parentId: 1,
+    menuName: "about",
+    orderNum: 1,
+    path: "/workplace/about",
+    frame: false,
+    cache: true,
+    icon: "badge-info",
+  },
+  {
+    id: 4,
+    parentId: null,
+    menuName: "system",
+    orderNum: 0,
+    path: "/system",
+    frame: false,
+    cache: true,
+    icon: "file-sliders",
+  },
+  {
+    id: 5,
+    parentId: 4,
+    menuName: "user",
+    orderNum: 1,
+    path: "/system/user",
+    frame: false,
+    cache: true,
+    icon: "user",
+  },
+  {
+    id: 6,
+    parentId: 4,
+    menuName: "dept",
+    orderNum: 1,
+    path: "/system/dept",
+    frame: false,
+    cache: true,
+    icon: "ruler",
+  },
+  {
+    id: 7,
+    parentId: 4,
+    menuName: "menu",
+    orderNum: 0,
+    path: "/system/menu",
+    frame: false,
+    cache: true,
+    icon: "menu",
+  },
+];
+
 // 模拟用户数据
-const users: User[] = [
+const userInfos: UserInfo[] = [
   {
-    id: "1",
+    id: 0,
     username: "admin",
-    email: "admin@example.com",
-    role: UserRole.ADMIN,
-    permissions: [Permission.READ, Permission.WRITE, Permission.DELETE, Permission.ADMIN],
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
+    nickname: "超级管理员",
+    email: "dingdangmaoup@gmail.com",
+    phone: "17607003598",
+    sex: "1",
+    avatar: "https://uchat.cn-bj.ufileos.com/rw_93484f18-7b8c-4cb2-b47c-24d8f5afefdd_unnamed.gif",
+    authorities: ["admin"],
+    permissions: [
+      "dashboard:view",
+      "home:view",
+      "user:view",
+      "dept:view",
+      "about:view",
+      "menu:view",
+      "system:view",
+    ],
+    menus: menuItems,
   },
   {
-    id: "2",
+    id: 1,
     username: "manager",
+    nickname: "管理员",
     email: "manager@example.com",
-    role: UserRole.MANAGER,
-    permissions: [Permission.READ, Permission.WRITE],
+    phone: "13800138000",
+    sex: "1",
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=manager",
+    authorities: ["manager"],
+    permissions: ["dashboard:view", "home:view", "user:view", "dept:view"],
+    menus: menuItems.filter((item) => item.id !== 7), // 管理员没有菜单管理权限
   },
   {
-    id: "3",
+    id: 2,
     username: "user",
+    nickname: "普通用户",
     email: "user@example.com",
-    role: UserRole.USER,
-    permissions: [Permission.READ],
+    phone: "13900139000",
+    sex: "0",
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=user",
+    authorities: ["user"],
+    permissions: ["dashboard:view", "home:view"],
+    menus: menuItems.filter((item) => ![5, 6, 7].includes(item.id)), // 普通用户只有工作台权限
   },
 ];
 
@@ -38,9 +132,14 @@ const users: User[] = [
 const refreshTokens: Record<string, string> = {};
 
 // 生成访问令牌
-const generateAccessToken = (user: User) => {
+const generateAccessToken = (userInfo: UserInfo) => {
   return sign(
-    { sub: user.id, username: user.username, role: user.role, permissions: user.permissions },
+    {
+      sub: userInfo.id.toString(),
+      username: userInfo.username,
+      authorities: userInfo.authorities,
+      permissions: userInfo.permissions,
+    },
     JWT_SECRET,
     {
       expiresIn: "15m",
@@ -49,11 +148,11 @@ const generateAccessToken = (user: User) => {
 };
 
 // 生成刷新令牌
-const generateRefreshToken = (user: User) => {
-  const refreshToken = sign({ sub: user.id }, JWT_REFRESH_SECRET, {
+const generateRefreshToken = (userInfo: UserInfo) => {
+  const refreshToken = sign({ sub: userInfo.id.toString() }, JWT_REFRESH_SECRET, {
     expiresIn: "7d",
   });
-  refreshTokens[user.id] = refreshToken;
+  refreshTokens[userInfo.id.toString()] = refreshToken;
   return refreshToken;
 };
 
@@ -94,21 +193,21 @@ export default [
       return HttpResponse.json(createErrorResponse("用户名或密码错误", 401), { status: 401 });
     }
 
-    const user = users.find((u) => u.username === username);
-    if (!user) {
+    // 查找用户信息
+    const userInfo = userInfos.find((u) => u.username === username);
+    if (!userInfo) {
       console.log("❌ 用户不存在");
       return HttpResponse.json(createErrorResponse("用户不存在", 401), { status: 401 });
     }
 
     // 生成令牌
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
+    const accessToken = generateAccessToken(userInfo);
+    const refreshToken = generateRefreshToken(userInfo);
 
+    // 只返回token信息
     const response: LoginResponse = {
       accessToken,
       refreshToken,
-      user,
-      expiresIn: 15 * 60, // 15分钟，单位秒
     };
 
     console.log("✅ 登录成功");
@@ -136,21 +235,21 @@ export default [
         return HttpResponse.json(createErrorResponse("无效的刷新令牌", 401), { status: 401 });
       }
 
-      const user = users.find((u) => u.id === userId);
-      if (!user) {
+      // 查找用户
+      const userInfo = userInfos.find((u) => u.id.toString() === userId);
+      if (!userInfo) {
         console.log("❌ 用户不存在");
         return HttpResponse.json(createErrorResponse("用户不存在", 401), { status: 401 });
       }
 
       // 生成新的访问令牌和刷新令牌
-      const newAccessToken = generateAccessToken(user);
-      const newRefreshToken = generateRefreshToken(user);
+      const newAccessToken = generateAccessToken(userInfo);
+      const newRefreshToken = generateRefreshToken(userInfo);
 
+      // 只返回token信息
       const response: LoginResponse = {
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
-        user,
-        expiresIn: 15 * 60,
       };
 
       console.log("✅ 刷新令牌成功");
@@ -174,16 +273,17 @@ export default [
     const token = authHeader.split(" ")[1];
 
     try {
-      const decoded = verify(token, JWT_SECRET) as { sub: string };
-      const user = users.find((u) => u.id === decoded.sub);
+      const decoded = verify(token, JWT_SECRET) as { sub: string; authorities?: string[] };
 
-      if (!user) {
+      // 查找用户
+      const userInfo = userInfos.find((u) => u.id.toString() === decoded.sub);
+      if (!userInfo) {
         console.log("❌ 用户不存在");
         return HttpResponse.json(createErrorResponse("用户不存在", 404), { status: 404 });
       }
 
-      console.log(`✅ 获取用户成功: ${user.username}`);
-      return HttpResponse.json(createSuccessResponse(user));
+      console.log(`✅ 获取用户成功: ${userInfo.username}`);
+      return HttpResponse.json(createSuccessResponse(userInfo));
     } catch (error) {
       console.log("❌ 无效的令牌");
       return HttpResponse.json(createErrorResponse("无效的令牌", 401), { status: 401 });
@@ -230,16 +330,76 @@ export default [
     const token = authHeader.split(" ")[1];
 
     try {
-      const decoded = verify(token, JWT_SECRET) as { sub: string; role: UserRole };
+      const decoded = verify(token, JWT_SECRET) as { sub: string; authorities?: string[] };
 
       // 检查权限
-      if (decoded.role !== UserRole.ADMIN) {
-        console.log("❌ 没有权限");
-        return HttpResponse.json(createErrorResponse("没有权限访问此资源", 403), { status: 403 });
+      if (decoded.authorities && decoded.authorities.includes("admin")) {
+        console.log("✅ 获取用户列表成功");
+        return HttpResponse.json(createSuccessResponse(userInfos));
       }
 
-      console.log("✅ 获取用户列表成功");
-      return HttpResponse.json(createSuccessResponse(users));
+      console.log("❌ 没有权限");
+      return HttpResponse.json(createErrorResponse("没有权限访问此资源", 403), { status: 403 });
+    } catch (error) {
+      console.log("❌ 无效的令牌");
+      return HttpResponse.json(createErrorResponse("无效的令牌", 401), { status: 401 });
+    }
+  }),
+
+  // 获取用户菜单
+  http.get(`${BASE_URL}/users/menus`, ({ request }) => {
+    console.log("📋 获取用户菜单");
+    const authHeader = request.headers.get("Authorization");
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.log("❌ 未授权");
+      return HttpResponse.json(createErrorResponse("未授权", 401), { status: 401 });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    try {
+      const decoded = verify(token, JWT_SECRET) as { sub: string; authorities?: string[] };
+
+      // 查找用户
+      const userInfo = userInfos.find((u) => u.id.toString() === decoded.sub);
+      if (!userInfo) {
+        console.log("❌ 用户不存在");
+        return HttpResponse.json(createErrorResponse("用户不存在", 404), { status: 404 });
+      }
+
+      console.log(`✅ 获取用户菜单成功: ${userInfo.username}`);
+      return HttpResponse.json(createSuccessResponse(userInfo.menus));
+    } catch (error) {
+      console.log("❌ 无效的令牌");
+      return HttpResponse.json(createErrorResponse("无效的令牌", 401), { status: 401 });
+    }
+  }),
+
+  // 获取用户权限
+  http.get(`${BASE_URL}/users/permissions`, ({ request }) => {
+    console.log("🔒 获取用户权限");
+    const authHeader = request.headers.get("Authorization");
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.log("❌ 未授权");
+      return HttpResponse.json(createErrorResponse("未授权", 401), { status: 401 });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    try {
+      const decoded = verify(token, JWT_SECRET) as { sub: string; authorities?: string[] };
+
+      // 查找用户
+      const userInfo = userInfos.find((u) => u.id.toString() === decoded.sub);
+      if (!userInfo) {
+        console.log("❌ 用户不存在");
+        return HttpResponse.json(createErrorResponse("用户不存在", 404), { status: 404 });
+      }
+
+      console.log(`✅ 获取用户权限成功: ${userInfo.username}`);
+      return HttpResponse.json(createSuccessResponse(userInfo.permissions));
     } catch (error) {
       console.log("❌ 无效的令牌");
       return HttpResponse.json(createErrorResponse("无效的令牌", 401), { status: 401 });

@@ -2,7 +2,6 @@
 
 import React from "react";
 import ProtectedRoute from "../../../components/auth/ProtectedRoute";
-import { UserRole } from "@/lib/types";
 
 interface DashboardProtectedProps {
   children: React.ReactNode;
@@ -26,7 +25,7 @@ export const AdminDashboardProtected: React.FC<DashboardProtectedProps> = ({
   locale,
 }) => {
   return (
-    <ProtectedRoute roles={[UserRole.ADMIN]} redirectTo={`/${locale}/login`}>
+    <ProtectedRoute authorities={["admin"]} redirectTo={`/${locale}/login`}>
       {children}
     </ProtectedRoute>
   );

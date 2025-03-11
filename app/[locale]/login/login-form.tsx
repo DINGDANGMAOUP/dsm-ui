@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LocaleLink } from "@/components/locale-link";
-import { setAccessToken } from "@/lib/auth/token";
+import { useAuth } from "@/hooks/useAuth";
 
 type LoginFormProps = {
   locale: string;
@@ -17,15 +16,9 @@ type LoginFormProps = {
   };
 };
 
-// 用户数据类型
-type UserData = {
-  username: string;
-  role: string;
-  loginTime: number;
-};
-
 export default function LoginForm({ locale, translations }: LoginFormProps) {
   const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -46,31 +39,11 @@ export default function LoginForm({ locale, translations }: LoginFormProps) {
     try {
       console.log("提交登录表单:", formData);
 
-      // 模拟登录成功
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // 根据用户名设置不同的角色
-      let role = "User";
-      if (formData.username.toLowerCase() === "admin") {
-        role = "Administrator";
-      } else if (formData.username.toLowerCase() === "manager") {
-        role = "Manager";
-      }
-
-      // 创建用户数据
-      const userData: UserData = {
+      // 使用AuthContext中的login方法进行登录
+      await login({
         username: formData.username,
-        role: role,
-        loginTime: Date.now(),
-      };
-
-      // 保存用户数据到 localStorage
-      localStorage.setItem("userData", JSON.stringify(userData));
-      console.log("用户数据已保存到 localStorage:", userData);
-
-      // 使用 setAccessToken 函数设置令牌
-      setAccessToken("mock_token");
-      console.log("访问令牌已设置");
+        password: formData.password,
+      });
 
       console.log("登录成功，准备跳转到仪表盘");
       router.push(`/${locale}/dashboard`);

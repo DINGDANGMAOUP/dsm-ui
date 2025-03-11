@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { LocaleLink } from "@/components/locale-link";
-import { removeTokens, isAuthenticated } from "@/lib/auth/token";
+import { useAuth } from "@/hooks/useAuth";
 
 type DashboardClientProps = {
   locale: string;
@@ -20,99 +20,18 @@ type DashboardClientProps = {
   };
 };
 
-// 用户数据类型
-type UserData = {
-  username: string;
-  role: string;
-  loginTime: number;
-};
-
 export default function DashboardClient({ locale, translations }: DashboardClientProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [userData, setUserData] = useState<UserData>({
-    username: "",
-    role: "",
-    loginTime: 0,
-  });
-
-  useEffect(() => {
-    // 从 localStorage 加载用户数据
-    const loadUserData = async () => {
-      try {
-        // 检查是否已登录
-        if (!isAuthenticated()) {
-          console.log("用户未登录，重定向到登录页");
-          window.location.href = `/${locale}/login`;
-          return;
-        }
-
-        // 从 localStorage 获取用户数据
-        const storedUserData = localStorage.getItem("userData");
-
-        if (storedUserData) {
-          const parsedUserData = JSON.parse(storedUserData) as UserData;
-          console.log("从 localStorage 加载用户数据:", parsedUserData);
-
-          // 检查数据是否过期（1小时）
-          const now = Date.now();
-          const isExpired = now - parsedUserData.loginTime > 3600000;
-
-          if (isExpired) {
-            console.log("用户数据已过期，重新获取");
-            await fetchUserData();
-          } else {
-            setUserData(parsedUserData);
-            setIsLoading(false);
-          }
-        } else {
-          // 如果没有存储的用户数据，则获取新数据
-          console.log("没有存储的用户数据，获取新数据");
-          await fetchUserData();
-        }
-      } catch (error) {
-        console.error("加载用户数据失败:", error);
-        setIsLoading(false);
-      }
-    };
-
-    // 模拟获取用户数据
-    const fetchUserData = async () => {
-      try {
-        // 模拟API请求延迟
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // 设置模拟用户数据
-        const newUserData: UserData = {
-          username: "Admin User",
-          role: "Administrator",
-          loginTime: Date.now(),
-        };
-
-        // 保存到 localStorage
-        localStorage.setItem("userData", JSON.stringify(newUserData));
-        console.log("用户数据已保存到 localStorage");
-
-        setUserData(newUserData);
-      } catch (error) {
-        console.error("获取用户数据失败:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUserData();
-  }, [locale]);
+  const { user, logout, isLoading } = useAuth();
 
   // 处理登出
-  const handleLogout = () => {
-    // 使用 removeTokens 函数清除令牌
-    removeTokens();
-
-    // 清除 localStorage
-    localStorage.removeItem("userData");
-
-    // 重定向到首页
-    window.location.href = `/${locale}`;
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // 重定向到首页
+      window.location.href = `/${locale}`;
+    } catch (error) {
+      console.error("登出失败:", error);
+    }
   };
 
   if (isLoading) {
@@ -123,9 +42,11 @@ export default function DashboardClient({ locale, translations }: DashboardClien
     <div className="space-y-8">
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-          {translations.welcome}, {userData.username}!
+          {translations.welcome}, {user?.username || "用户"}!
         </h2>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Role: {userData.role}</p>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          角色: {user?.authorities?.join(", ") || "普通用户"}
+        </p>
       </div>
 
       <div className="mb-8">

@@ -41,7 +41,12 @@ apiClient.interceptors.response.use(
 
       // 如果在客户端，重定向到登录页
       if (typeof window !== "undefined") {
-        window.location.href = "/login";
+        // 获取当前语言
+        const pathname = window.location.pathname;
+        const segments = pathname.split("/");
+        const locale = segments.length > 1 && segments[1].length === 2 ? segments[1] : "zh"; // 默认使用中文
+
+        window.location.href = `/${locale}/login`;
       }
     }
 

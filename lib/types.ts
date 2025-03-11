@@ -5,22 +5,33 @@ export enum UserRole {
   USER = "USER",
 }
 
-// 权限定义
-export enum Permission {
-  READ = "READ",
-  WRITE = "WRITE",
-  DELETE = "DELETE",
-  ADMIN = "ADMIN",
+// 新的权限类型定义
+export type Authority = string;
+
+// 菜单项定义
+export interface MenuItem {
+  id: number;
+  parentId: number | null;
+  menuName: string;
+  orderNum: number;
+  path: string;
+  frame: boolean;
+  cache: boolean;
+  icon: string;
 }
 
-// 用户信息
-export interface User {
-  id: string;
+// 新的用户信息定义
+export interface UserInfo {
+  id: number;
   username: string;
+  nickname: string;
   email: string;
-  role: UserRole;
-  permissions: Permission[];
-  avatar?: string;
+  phone: string;
+  sex: string;
+  avatar: string;
+  authorities: Authority[];
+  permissions: string[];
+  menus: MenuItem[];
 }
 
 // 登录请求
@@ -33,8 +44,6 @@ export interface LoginRequest {
 export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
-  user: User;
-  expiresIn: number;
 }
 
 // 刷新Token请求
