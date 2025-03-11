@@ -1,6 +1,5 @@
 import { LocaleLink } from "@/components/locale-link";
 import { ModeToggle } from "@/components/mode-toggle";
-import Link from "next/link";
 
 export default function Home() {
   return (

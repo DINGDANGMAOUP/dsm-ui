@@ -3,7 +3,6 @@ async function initMocks() {
   console.log("Mock模块: 开始初始化Mock服务...");
   console.log(`Mock模块: 环境: ${process.env.NODE_ENV}`);
   console.log(`Mock模块: 是否启用Mock: ${process.env.ENABLE_MOCKS}`);
-  // 只在开发环境中启动mock
   if (process.env.ENABLE_MOCKS === "true") {
     try {
       console.log("Mock模块: 正在导入服务器端Mock...");

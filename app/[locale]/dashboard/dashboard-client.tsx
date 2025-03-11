@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { LocaleLink } from "@/components/locale-link";
 import { useAuth } from "@/hooks/useAuth";
 
