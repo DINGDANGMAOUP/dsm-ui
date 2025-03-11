@@ -1,2 +1,2 @@
-import users from "./users";
-export default [...users];
+import auth from "./auth";
+export default [...auth];
