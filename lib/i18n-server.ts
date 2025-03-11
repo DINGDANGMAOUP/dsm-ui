@@ -2,14 +2,14 @@ import { cookies, headers } from "next/headers";
 import { locales, defaultLocale } from "./dictionaries";
 
 // 从请求中获取当前语言
-export async function getLocaleFromRequest(): Promise<string> {
+export function getLocaleFromRequest(): string {
   try {
     // 尝试从 cookie 中获取语言设置
     const cookieStore = cookies();
-    const localeCookie = cookieStore.get("NEXT_LOCALE");
+    const nextLocaleCookie = cookieStore.get("NEXT_LOCALE");
 
-    if (localeCookie?.value && locales.includes(localeCookie.value)) {
-      return localeCookie.value;
+    if (nextLocaleCookie?.value && locales.includes(nextLocaleCookie.value)) {
+      return nextLocaleCookie.value;
     }
 
     // 尝试从 Accept-Language 头部获取语言设置

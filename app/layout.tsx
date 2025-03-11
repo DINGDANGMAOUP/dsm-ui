@@ -1,10 +1,13 @@
 import "../styles/globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
-import AuthProvider from "@/lib/auth/AuthContext";
 import initMocks from "@/lib/mocks";
+import { defaultLocale } from "@/lib/dictionaries";
 
 initMocks().catch(console.error);
+
+export const metadata = {
+  title: "DSM-UI",
+  description: "企业级应用，包含认证和权限控制",
+};
 
 export default function RootLayout({
   children,
@@ -12,21 +15,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={defaultLocale} suppressHydrationWarning>
       <head />
-      <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AuthProvider>
-            {children}
-            <Toaster />
-          </AuthProvider>
-        </ThemeProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

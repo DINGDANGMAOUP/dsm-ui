@@ -3,7 +3,14 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { LocaleLink } from "@/components/locale-link";
 import { getDictionary } from "@/lib/dictionaries";
 
-export default async function Home({ params: { locale } }: { params: { locale: string } }) {
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ locale: string }> | { locale: string };
+}) {
+  // 等待并解析参数
+  const { locale } = await params;
+
   // 获取当前语言的字典
   const dict = await getDictionary(locale);
 
