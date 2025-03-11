@@ -3,33 +3,37 @@ import { locales, defaultLocale } from "./dictionaries";
 
 // 从请求中获取当前语言
 export async function getLocaleFromRequest(): Promise<string> {
-  // 尝试从 cookie 中获取语言设置
-  const cookieStore = await cookies();
-  const localeCookie = cookieStore.get("NEXT_LOCALE");
+  try {
+    // 尝试从 cookie 中获取语言设置
+    const cookieStore = cookies();
+    const localeCookie = cookieStore.get("NEXT_LOCALE");
 
-  if (localeCookie?.value && locales.includes(localeCookie.value)) {
-    return localeCookie.value;
-  }
+    if (localeCookie?.value && locales.includes(localeCookie.value)) {
+      return localeCookie.value;
+    }
 
-  // 尝试从 Accept-Language 头部获取语言设置
-  const headersList = await headers();
-  const acceptLanguage = headersList.get("accept-language") || "";
+    // 尝试从 Accept-Language 头部获取语言设置
+    const headersList = headers();
+    const acceptLanguage = headersList.get("accept-language") || "";
 
-  // 解析 Accept-Language 头部
-  const parsedLocales = acceptLanguage.split(",").map((locale: string) => {
-    const [lang, q = "1"] = locale.split(";q=");
-    return { lang: lang.trim(), q: parseFloat(q) };
-  });
+    // 解析 Accept-Language 头部
+    const parsedLocales = acceptLanguage.split(",").map((locale: string) => {
+      const [lang, q = "1"] = locale.split(";q=");
+      return { lang: lang.trim(), q: parseFloat(q) };
+    });
 
-  // 按照 q 值排序
-  parsedLocales.sort((a: { q: number }, b: { q: number }) => b.q - a.q);
+    // 按照 q 值排序
+    parsedLocales.sort((a: { q: number }, b: { q: number }) => b.q - a.q);
 
-  // 查找匹配的语言
-  for (const { lang } of parsedLocales) {
-    const locale = locales.find(
-      (l) => lang === l || lang.startsWith(`${l}-`) || l.startsWith(`${lang}-`)
-    );
-    if (locale) return locale;
+    // 查找匹配的语言
+    for (const { lang } of parsedLocales) {
+      const locale = locales.find(
+        (l) => lang === l || lang.startsWith(`${l}-`) || l.startsWith(`${lang}-`)
+      );
+      if (locale) return locale;
+    }
+  } catch (error) {
+    console.error("Error getting locale from request:", error);
   }
 
   return defaultLocale;
