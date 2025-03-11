@@ -1,0 +1,17 @@
+{
+  "title": "Login",
+  "username": "Username",
+  "password": "Password",
+  "submit": "Submit",
+  "rememberMe": "Remember me",
+  "forgotPassword": "Forgot password?",
+  "noAccount": "Don't have an account?",
+  "register": "Register",
+  "errors": {
+    "usernameRequired": "Username is required",
+    "passwordRequired": "Password is required",
+    "invalidCredentials": "Invalid username or password"
+  },
+  "success": "Login successful",
+  "redirecting": "Redirecting..."
+}

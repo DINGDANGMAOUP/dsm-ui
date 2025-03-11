@@ -1,0 +1,28 @@
+{
+  "title": "仪表盘",
+  "welcome": "欢迎回来",
+  "stats": {
+    "title": "统计数据",
+    "users": "用户数",
+    "orders": "订单数",
+    "revenue": "收入",
+    "growth": "增长率"
+  },
+  "recentActivity": {
+    "title": "最近活动",
+    "noActivity": "暂无活动",
+    "viewAll": "查看全部"
+  },
+  "quickActions": {
+    "title": "快捷操作",
+    "createUser": "创建用户",
+    "createOrder": "创建订单",
+    "generateReport": "生成报告",
+    "settings": "设置"
+  },
+  "notifications": {
+    "title": "通知",
+    "noNotifications": "暂无通知",
+    "markAllAsRead": "标记所有为已读"
+  }
+}

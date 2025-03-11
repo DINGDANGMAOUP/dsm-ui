@@ -1,0 +1,28 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome back",
+  "stats": {
+    "title": "Statistics",
+    "users": "Users",
+    "orders": "Orders",
+    "revenue": "Revenue",
+    "growth": "Growth"
+  },
+  "recentActivity": {
+    "title": "Recent Activity",
+    "noActivity": "No activity",
+    "viewAll": "View all"
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "createUser": "Create User",
+    "createOrder": "Create Order",
+    "generateReport": "Generate Report",
+    "settings": "Settings"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "noNotifications": "No notifications",
+    "markAllAsRead": "Mark all as read"
+  }
+}

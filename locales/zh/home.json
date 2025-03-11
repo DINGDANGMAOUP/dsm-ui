@@ -1,0 +1,14 @@
+{
+  "welcome": "欢迎使用 DSM-UI",
+  "description": "这是一个使用 Next.js 构建的企业级应用，包含认证和权限控制。",
+  "features": {
+    "title": "功能特点",
+    "authentication": "用户认证",
+    "authorization": "权限控制",
+    "i18n": "国际化支持",
+    "theme": "主题切换",
+    "responsive": "响应式设计"
+  },
+  "getStarted": "开始使用",
+  "learnMore": "了解更多"
+}

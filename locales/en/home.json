@@ -1,0 +1,14 @@
+{
+  "welcome": "Welcome to DSM-UI",
+  "description": "This is an enterprise-level application built with Next.js, featuring authentication and authorization.",
+  "features": {
+    "title": "Features",
+    "authentication": "User Authentication",
+    "authorization": "Authorization Control",
+    "i18n": "Internationalization",
+    "theme": "Theme Switching",
+    "responsive": "Responsive Design"
+  },
+  "getStarted": "Get Started",
+  "learnMore": "Learn More"
+}
