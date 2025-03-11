@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { ApiResponse } from "../types";
 
 // SpringBoot API的基础URL
-const SPRING_BOOT_API_URL = process.env.SPRING_BOOT_API_URL || "http://localhost:8080/api";
+export const SPRING_BOOT_API_URL = process.env.SPRING_BOOT_API_URL || "http://localhost:8080/api";
 
 // 创建axios实例 - 用于服务端与SpringBoot通信
 const serverApiClient: AxiosInstance = axios.create({

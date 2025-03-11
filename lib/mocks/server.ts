@@ -1,5 +1,5 @@
 import { setupServer } from "msw/node";
-import { handlers } from "./handlers";
+import handlers from "./handlers";
 
 console.log("Mock服务器: 创建MSW服务器实例");
 

@@ -1,12 +1,7 @@
 import { http, HttpResponse, delay } from "msw";
-import { ApiResponse, LoginResponse, Permission, User, UserRole } from "../types";
+import { ApiResponse, LoginResponse, Permission, User, UserRole } from "@/lib/types";
 import { verify, sign } from "jsonwebtoken";
-
-// 定义SpringBoot API基础URL
-const SPRING_BOOT_API_URL = process.env.SPRING_BOOT_API_URL || "http://localhost:8080/api";
-
-// 打印配置信息
-console.log(`🔧 Mock配置: SPRING_BOOT_API_URL = ${SPRING_BOOT_API_URL}`);
+import { SPRING_BOOT_API_URL } from "@/lib/api/server";
 
 // JWT密钥（仅用于开发环境）
 const JWT_SECRET = "mock-jwt-secret-key";
@@ -83,7 +78,7 @@ const createErrorResponse = (message: string, code = 400): ApiResponse => {
 };
 
 // API请求处理程序 - 拦截对SpringBoot API的请求
-export const handlers = [
+export default [
   // 登录接口
   http.post(`${SPRING_BOOT_API_URL}/auth/login`, async ({ request }) => {
     console.log("🔑 处理登录请求");
