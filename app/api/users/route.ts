@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { User } from "@/lib/types";
+import { UserInfo } from "@/lib/types";
 import serverApi from "@/lib/api/server";
 
 // 获取用户列表
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     if (order) queryString += `&order=${order}`;
 
     // 转发请求到SpringBoot后端
-    const response = await serverApi.get<User[]>(`/users${queryString}`, token);
+    const response = await serverApi.get<UserInfo[]>(`/users${queryString}`, token);
 
     // 返回响应
     return NextResponse.json(response);
