@@ -1,6 +1,6 @@
 import "../styles/globals.css";
-import initMocks from "@/lib/mocks";
-import { defaultLocale } from "@/lib/dictionaries";
+import initMocks from "@lib/mocks";
+import { defaultLocale } from "@lib/dictionaries";
 
 initMocks().catch(console.error);
 
