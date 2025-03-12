@@ -1,8 +1,8 @@
-import { ModeToggle } from "@/components/mode-toggle";
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { LocaleLink } from "@/components/locale-link";
-import { getDictionary } from "@/lib/dictionaries";
-import LoginForm from "@/app/[locale]/login/login-form";
+import { ModeToggle } from "@components/mode-toggle";
+import { LanguageSwitcher } from "@components/language-switcher";
+import { LocaleLink } from "@components/locale-link";
+import { getDictionary } from "@lib/dictionaries";
+import LoginForm from "./login-form";
 
 export default async function LoginPage({ params }: { params: Promise<{ locale: string }> }) {
   // 获取当前语言
