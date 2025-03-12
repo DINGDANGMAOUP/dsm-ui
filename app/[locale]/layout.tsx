@@ -2,11 +2,7 @@ import "../../styles/globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import AuthProvider from "@/lib/auth/AuthContext";
-import initMocks from "@/lib/mocks";
 import { locales } from "@/lib/dictionaries";
-
-// 初始化模拟数据
-initMocks().catch(console.error);
 
 export async function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
