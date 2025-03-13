@@ -7,7 +7,6 @@ import { LocaleLink } from "@/components/locale-link";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -60,9 +59,7 @@ export function LocaleBreadcrumb({ items, translations = {} }: LocaleBreadcrumbP
             {index > 0 && <BreadcrumbSeparator />}
             <BreadcrumbItem>
               {item.path ? (
-                <LocaleLink href={item.path}>
-                  <BreadcrumbLink>{item.label}</BreadcrumbLink>
-                </LocaleLink>
+                <LocaleLink href={item.path}>{item.label}</LocaleLink>
               ) : (
                 <BreadcrumbPage>{item.label}</BreadcrumbPage>
               )}
