@@ -3,8 +3,8 @@ async function initMocks() {
   console.log("Mock模块: 开始初始化Mock服务...");
   console.log(`Mock模块: 环境: ${process.env.NODE_ENV}`);
   console.log(`Mock模块: 运行时: ${process.env.NEXT_RUNTIME}`);
-  console.log(`Mock模块: 是否启用Mock: ${process.env.ENABLE_MOCKS}`);
-  if (process.env.ENABLE_MOCKS === "true" && process.env.NEXT_RUNTIME === "nodejs") {
+  console.log(`Mock模块: 是否启用Mock: ${process.env.NEXT_PUBLIC_ENABLE_MOCKS}`);
+  if (process.env.NEXT_PUBLIC_ENABLE_MOCKS === "true" && process.env.NEXT_RUNTIME === "nodejs") {
     try {
       console.log("Mock模块: 正在导入服务器端Mock...");
       const { server } = await import("./server");
