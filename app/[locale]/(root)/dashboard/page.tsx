@@ -1,8 +1,8 @@
 import { ModeToggle } from "@/components/mode-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { getDictionary } from "@/lib/dictionaries";
-import DashboardClient from "@/app/[locale]/dashboard/dashboard-client";
-import DashboardProtected from "@/app/[locale]/dashboard/DashboardProtected";
+import DashboardClient from "@/app/[locale]/(root)/dashboard/dashboard-client";
+import DashboardProtected from "@/app/[locale]/(root)/dashboard/DashboardProtected";
 
 export default async function DashboardPage({ params }: { params: Promise<{ locale: string }> }) {
   // 获取当前语言
