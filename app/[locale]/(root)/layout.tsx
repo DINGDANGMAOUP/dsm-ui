@@ -4,6 +4,8 @@ import * as React from "react";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { LocaleBreadcrumb } from "@/components/layout/breadcrumb";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   // 面包屑翻译
@@ -29,6 +31,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
             <LocaleBreadcrumb translations={breadcrumbTranslations} />
+          </div>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <ModeToggle />
           </div>
         </header>
         <div className="flex flex-1 flex-col p-4 pt-0">{children}</div>

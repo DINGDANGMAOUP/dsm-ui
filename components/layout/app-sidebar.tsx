@@ -5,12 +5,9 @@ import { usePathname } from "next/navigation";
 import { useCurrentLocale } from "@/lib/i18n-utils";
 import { useAuth } from "@/hooks/useAuth";
 import { LocaleLink } from "@/components/locale-link";
-import { ModeToggle } from "@/components/mode-toggle";
-import { LanguageSwitcher } from "@/components/language-switcher";
 import { cn } from "@/lib/utils";
 import { MenuItem } from "@/lib/types";
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronRight } from "lucide-react";
 
 import {
   Sidebar,
@@ -56,41 +53,30 @@ function renderMenuItems(
     if (hasChildren) {
       return (
         <SidebarMenuItem key={item.id}>
-          <div className="w-full">
-            <SidebarMenuButton
-              isActive={isActive || hasActiveChild}
-              className="w-full justify-between"
-              onClick={(e) => {
-                // 阻止事件冒泡，确保点击事件不会被父元素捕获
-                e.stopPropagation();
-                // 如果当前菜单已展开，则关闭它；否则展开它
-                handleExpandMenu((prevId) => (prevId === item.id ? null : item.id));
-              }}
-            >
-              <div className="flex items-center gap-2">
-                {getIcon(item.icon)}
-                <span>{item.menuName}</span>
-              </div>
-              <ChevronRight
-                className={cn(
-                  "ml-auto transition-transform duration-200",
-                  expandedMenuId === item.id && "rotate-90"
-                )}
-              />
-            </SidebarMenuButton>
-            {expandedMenuId === item.id && (
-              <SidebarMenuSub>
-                {renderMenuItems(
-                  items,
-                  item.id,
-                  pathname,
-                  locale,
-                  expandedMenuId,
-                  handleExpandMenu
-                )}
-              </SidebarMenuSub>
-            )}
-          </div>
+          <SidebarMenuButton
+            isActive={isActive || hasActiveChild}
+            className="w-full justify-between"
+            onClick={(e) => {
+              // 阻止事件冒泡，确保点击事件不会被父元素捕获
+              e.stopPropagation();
+              // 如果当前菜单已展开，则关闭它；否则展开它
+              handleExpandMenu((prevId) => (prevId === item.id ? null : item.id));
+            }}
+          >
+            {getIcon(item.icon)}
+            <span>{item.menuName}</span>
+            <ChevronRight
+              className={cn(
+                "ml-auto transition-transform duration-200",
+                expandedMenuId === item.id && "rotate-90"
+              )}
+            />
+          </SidebarMenuButton>
+          {expandedMenuId === item.id && (
+            <SidebarMenuSub>
+              {renderMenuItems(items, item.id, pathname, locale, expandedMenuId, handleExpandMenu)}
+            </SidebarMenuSub>
+          )}
         </SidebarMenuItem>
       );
     }
