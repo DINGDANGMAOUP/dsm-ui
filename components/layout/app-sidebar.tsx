@@ -37,7 +37,9 @@ function renderMenuItems(
   items: MenuItem[],
   parentId: number | null,
   pathname: string,
-  locale: string
+  locale: string,
+  expandedMenuId: number | null,
+  handleExpandMenu: (id: number | null | ((prevId: number | null) => number | null)) => void
 ) {
   const menuItems = items.filter((item) => item.parentId === parentId);
 
@@ -54,20 +56,41 @@ function renderMenuItems(
     if (hasChildren) {
       return (
         <SidebarMenuItem key={item.id}>
-          <Collapsible defaultOpen={hasActiveChild} className="group/collapsible">
-            <CollapsibleTrigger className="w-full" asChild>
-              <SidebarMenuButton isActive={isActive || hasActiveChild} className="justify-between">
-                <div className="flex items-center gap-2">
-                  {getIcon(item.icon)}
-                  <span>{item.menuName}</span>
-                </div>
-                <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-              </SidebarMenuButton>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <SidebarMenuSub>{renderMenuItems(items, item.id, pathname, locale)}</SidebarMenuSub>
-            </CollapsibleContent>
-          </Collapsible>
+          <div className="w-full">
+            <SidebarMenuButton
+              isActive={isActive || hasActiveChild}
+              className="w-full justify-between"
+              onClick={(e) => {
+                // 阻止事件冒泡，确保点击事件不会被父元素捕获
+                e.stopPropagation();
+                // 如果当前菜单已展开，则关闭它；否则展开它
+                handleExpandMenu((prevId) => (prevId === item.id ? null : item.id));
+              }}
+            >
+              <div className="flex items-center gap-2">
+                {getIcon(item.icon)}
+                <span>{item.menuName}</span>
+              </div>
+              <ChevronRight
+                className={cn(
+                  "ml-auto transition-transform duration-200",
+                  expandedMenuId === item.id && "rotate-90"
+                )}
+              />
+            </SidebarMenuButton>
+            {expandedMenuId === item.id && (
+              <SidebarMenuSub>
+                {renderMenuItems(
+                  items,
+                  item.id,
+                  pathname,
+                  locale,
+                  expandedMenuId,
+                  handleExpandMenu
+                )}
+              </SidebarMenuSub>
+            )}
+          </div>
         </SidebarMenuItem>
       );
     }
@@ -89,15 +112,7 @@ export function AppSidebar() {
   const locale = useCurrentLocale();
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const handleLogout = async () => {
-    try {
-      await logout();
-      // 重定向到首页
-      window.location.href = `/${locale}`;
-    } catch (error) {
-      console.error("登出失败:", error);
-    }
-  };
+
   // 如果用户未登录或没有菜单数据，显示基本菜单
   const defaultMenuItems: MenuItem[] = [
     {
@@ -122,6 +137,52 @@ export function AppSidebar() {
     },
   ];
 
+  // 添加状态来跟踪当前展开的菜单ID
+  const [expandedMenuId, setExpandedMenuId] = React.useState<number | null>(null);
+
+  // 添加状态来跟踪用户是否手动操作过菜单
+  const [userInteracted, setUserInteracted] = React.useState(false);
+
+  // 包装 setExpandedMenuId 函数，在用户手动操作时设置 userInteracted 标志
+  const handleExpandMenu = React.useCallback(
+    (id: number | null | ((prevId: number | null) => number | null)) => {
+      setUserInteracted(true);
+      setExpandedMenuId(id);
+    },
+    []
+  );
+
+  // 当路由变化时，如果用户没有手动操作过菜单，则自动展开对应的菜单
+  React.useEffect(() => {
+    // 如果用户已经手动操作过菜单，则不自动展开
+    if (userInteracted) return;
+
+    const menuItems = user?.menus || defaultMenuItems;
+
+    // 查找当前路径对应的菜单项
+    const currentMenuItem = menuItems.find((item) => pathname === `/${locale}${item.path}`);
+
+    // 如果找到了当前菜单项，并且它有父菜单，则设置父菜单为展开状态
+    if (currentMenuItem && currentMenuItem.parentId) {
+      setExpandedMenuId(currentMenuItem.parentId);
+    }
+  }, [pathname, locale, user, defaultMenuItems, userInteracted]);
+
+  // 当路由变化时，重置用户交互标志，允许自动展开菜单
+  React.useEffect(() => {
+    setUserInteracted(false);
+  }, [pathname]);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // 重定向到首页
+      window.location.href = `/${locale}`;
+    } catch (error) {
+      console.error("登出失败:", error);
+    }
+  };
+
   const menuItems = user?.menus || defaultMenuItems;
 
   return (
@@ -133,7 +194,9 @@ export function AppSidebar() {
         </LocaleLink>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarMenu>{renderMenuItems(menuItems, null, pathname, locale)}</SidebarMenu>
+        <SidebarMenu>
+          {renderMenuItems(menuItems, null, pathname, locale, expandedMenuId, handleExpandMenu)}
+        </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
         <div className="flex items-center justify-between">
