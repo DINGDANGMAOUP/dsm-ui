@@ -22,35 +22,13 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 
-import {
-  BarChart3Icon,
-  BoxIcon,
-  CogIcon,
-  HomeIcon,
-  LayoutDashboardIcon,
-  LogOutIcon,
-  PackageIcon,
-  ServerIcon,
-  UsersIcon,
-} from "lucide-react";
-
-// 图标映射
-const iconMap: Record<string, React.ReactNode> = {
-  home: <HomeIcon className="h-4 w-4" />,
-  dashboard: <LayoutDashboardIcon className="h-4 w-4" />,
-  users: <UsersIcon className="h-4 w-4" />,
-  settings: <CogIcon className="h-4 w-4" />,
-  analytics: <BarChart3Icon className="h-4 w-4" />,
-  products: <BoxIcon className="h-4 w-4" />,
-  packages: <PackageIcon className="h-4 w-4" />,
-  servers: <ServerIcon className="h-4 w-4" />,
-  // 默认图标
-  default: <BoxIcon className="h-4 w-4" />,
-};
+import { PackageIcon } from "lucide-react";
+import { NavUser } from "./nav-user";
+import CustomIcon from "../custom-icon";
 
 // 获取图标
 function getIcon(iconName: string): React.ReactNode {
-  return iconMap[iconName] || iconMap.default;
+  return <CustomIcon name={iconName} />;
 }
 
 // 递归渲染菜单项
@@ -97,8 +75,6 @@ export function AppSidebar() {
   const locale = useCurrentLocale();
   const pathname = usePathname();
   const { user, logout } = useAuth();
-
-  // 处理登出
   const handleLogout = async () => {
     try {
       await logout();
@@ -108,7 +84,6 @@ export function AppSidebar() {
       console.error("登出失败:", error);
     }
   };
-
   // 如果用户未登录或没有菜单数据，显示基本菜单
   const defaultMenuItems: MenuItem[] = [
     {
@@ -147,22 +122,8 @@ export function AppSidebar() {
         <SidebarMenu>{renderMenuItems(menuItems, null, pathname, locale)}</SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
-        <SidebarSeparator />
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-2">
-            <ModeToggle />
-            <LanguageSwitcher />
-          </div>
-          <button
-            onClick={handleLogout}
-            className={cn(
-              "hover:bg-muted flex h-8 w-8 items-center justify-center rounded-md",
-              "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <LogOutIcon className="h-4 w-4" />
-            <span className="sr-only">登出</span>
-          </button>
+        <div className="flex items-center justify-between">
+          <NavUser user={user} onLogout={handleLogout} />
         </div>
       </SidebarFooter>
     </Sidebar>
