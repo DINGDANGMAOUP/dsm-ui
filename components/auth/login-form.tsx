@@ -78,12 +78,9 @@ export function LoginForm({ locale, translations, className }: LoginFormProps) {
 
   return (
     <div
-      className={cn(
-        "grid w-full gap-6 overflow-hidden rounded-lg shadow-lg md:grid-cols-2",
-        className
-      )}
+      className={cn("grid w-full overflow-hidden rounded-lg shadow-lg md:grid-cols-2", className)}
     >
-      <div className="relative hidden h-full flex-col bg-gradient-to-br from-blue-600 to-indigo-800 p-10 text-white md:flex dark:from-blue-800 dark:to-indigo-950">
+      <div className="relative hidden h-full flex-col bg-gradient-to-br from-blue-600 to-indigo-800 p-10 text-white md:flex md:rounded-l-lg dark:from-blue-800 dark:to-indigo-950">
         <div className="absolute inset-0 bg-black/20" />
         <div
           className="bg-grid-white/10 absolute inset-0"
@@ -130,7 +127,7 @@ export function LoginForm({ locale, translations, className }: LoginFormProps) {
         </div>
       </div>
 
-      <Card className="border-none shadow-none md:border md:shadow-sm">
+      <Card className="border-none shadow-none md:rounded-none md:rounded-r-lg md:border-0 md:shadow-none">
         <CardHeader className="space-y-1 pb-6">
           <CardTitle className="text-center text-2xl font-bold tracking-tight">
             {translations.title}

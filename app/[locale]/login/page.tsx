@@ -27,18 +27,20 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
       </div>
 
       <div className="relative z-10 w-full max-w-sm md:max-w-3xl">
-        <LoginForm
-          locale={locale}
-          translations={{
-            title: dict.login.title,
-            username: dict.login.username,
-            password: dict.login.password,
-            rememberMe: dict.login.rememberMe,
-            forgotPassword: dict.login.forgotPassword,
-            submit: dict.login.submit,
-            back: dict.common.back,
-          }}
-        />
+        <div className="overflow-hidden rounded-lg bg-white/80 shadow-xl backdrop-blur-sm dark:bg-gray-950/80">
+          <LoginForm
+            locale={locale}
+            translations={{
+              title: dict.login.title,
+              username: dict.login.username,
+              password: dict.login.password,
+              rememberMe: dict.login.rememberMe,
+              forgotPassword: dict.login.forgotPassword,
+              submit: dict.login.submit,
+              back: dict.common.back,
+            }}
+          />
+        </div>
       </div>
     </div>
   );
