@@ -21,8 +21,8 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
         <div className="absolute top-[20%] left-[40%] h-[300px] w-[300px] rounded-full bg-pink-100/20 blur-3xl dark:bg-pink-900/10" />
       </div>
 
-      {/* 顶部工具栏 - 在移动端放在顶部中央，在大屏幕放在右上角 */}
-      <div className="fixed top-0 right-0 left-0 z-50 flex justify-center border-b bg-white/80 p-2 backdrop-blur-sm sm:absolute sm:top-4 sm:right-4 sm:left-auto sm:justify-end sm:border-0 sm:bg-transparent dark:border-gray-800 dark:bg-gray-950/80">
+      {/* 顶部工具栏 - 外层完全透明，内层有模糊效果 */}
+      <div className="fixed top-0 right-0 left-0 z-50 flex justify-center p-2 sm:absolute sm:top-4 sm:right-4 sm:left-auto sm:justify-end">
         <div className="flex items-center space-x-2 rounded-full bg-white/70 px-2 py-1 backdrop-blur-sm dark:bg-gray-800/70">
           <LanguageSwitcher />
           <ModeToggle />
