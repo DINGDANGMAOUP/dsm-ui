@@ -9,6 +9,8 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { cn } from "@/lib/utils";
 import { MenuItem } from "@/lib/types";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 import {
   Sidebar,
@@ -19,7 +21,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarMenuSub,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
 
 import { PackageIcon } from "lucide-react";
@@ -45,15 +46,28 @@ function renderMenuItems(
   return menuItems.map((item) => {
     const hasChildren = items.some((child) => child.parentId === item.id);
     const isActive = pathname === `/${locale}${item.path}`;
+    // 检查子菜单中是否有活动项
+    const hasActiveChild =
+      hasChildren &&
+      items.some((child) => child.parentId === item.id && pathname === `/${locale}${child.path}`);
 
     if (hasChildren) {
       return (
         <SidebarMenuItem key={item.id}>
-          <SidebarMenuButton isActive={isActive}>
-            {getIcon(item.icon)}
-            <span>{item.menuName}</span>
-          </SidebarMenuButton>
-          <SidebarMenuSub>{renderMenuItems(items, item.id, pathname, locale)}</SidebarMenuSub>
+          <Collapsible defaultOpen={hasActiveChild} className="group/collapsible">
+            <CollapsibleTrigger className="w-full" asChild>
+              <SidebarMenuButton isActive={isActive || hasActiveChild} className="justify-between">
+                <div className="flex items-center gap-2">
+                  {getIcon(item.icon)}
+                  <span>{item.menuName}</span>
+                </div>
+                <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarMenuSub>{renderMenuItems(items, item.id, pathname, locale)}</SidebarMenuSub>
+            </CollapsibleContent>
+          </Collapsible>
         </SidebarMenuItem>
       );
     }
