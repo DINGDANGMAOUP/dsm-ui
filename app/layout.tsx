@@ -1,6 +1,7 @@
 import "../styles/globals.css";
 import initMocks from "@lib/mocks";
 import { defaultLocale } from "@lib/dictionaries";
+import { ThemeProvider } from "@/components/theme-provider";
 
 initMocks().catch(console.error);
 
@@ -17,7 +18,16 @@ export default function RootLayout({
   return (
     <html lang={defaultLocale} suppressHydrationWarning>
       <head />
-      <body>{children}</body>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

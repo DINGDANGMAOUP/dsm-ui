@@ -12,7 +12,6 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   // 获取当前语言的字典
   const dict = await getDictionary(locale);
   console.log(`DashboardPage: 加载字典成功`);
-
   return (
     <DashboardProtected locale={locale}>
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900">

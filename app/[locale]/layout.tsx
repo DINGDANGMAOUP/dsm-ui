@@ -9,29 +9,15 @@ export async function generateStaticParams() {
 
 export default async function LocaleLayout({
   children,
-  params,
 }: Readonly<{
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
 }>) {
-  // 获取当前语言
-  const { locale } = await params;
-  console.log(`LocaleLayout: 当前语言: ${locale}`);
-
-  // 验证语言是否受支持
-  if (!locales.includes(locale)) {
-    // 如果不支持，可以在这里处理，例如重定向到默认语言
-    console.error(`LocaleLayout: 不支持的语言: ${locale}`);
-  }
-
   return (
-    <div lang={locale} className="contents">
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-        <AuthProvider>
-          {children}
-          <Toaster />
-        </AuthProvider>
-      </ThemeProvider>
+    <div className="contents">
+      <AuthProvider>
+        {children}
+        <Toaster />
+      </AuthProvider>
     </div>
   );
 }
