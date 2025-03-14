@@ -262,6 +262,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // 匹配所有路径，除了静态资源
-    "/((?!_next/static|_next/image|favicon.ico|robots.txt|mockServiceWorker.js).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|logo.gif|mockServiceWorker.js).*)",
   ],
 };
