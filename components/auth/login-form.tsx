@@ -80,6 +80,7 @@ export function LoginForm({ locale, translations, className }: LoginFormProps) {
     <div
       className={cn("grid w-full overflow-hidden rounded-lg shadow-lg md:grid-cols-2", className)}
     >
+      {/* 左侧背景区域 - 在移动端隐藏，在中等屏幕及以上显示 */}
       <div className="relative hidden h-full flex-col bg-gradient-to-br from-blue-600 to-indigo-800 p-10 text-white md:flex md:rounded-l-lg dark:from-blue-800 dark:to-indigo-950">
         <div className="absolute inset-0 bg-black/20" />
         <div
@@ -127,8 +128,29 @@ export function LoginForm({ locale, translations, className }: LoginFormProps) {
         </div>
       </div>
 
+      {/* 移动端顶部品牌展示 - 只在移动端显示 */}
+      <div className="relative flex h-24 items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-600 p-4 md:hidden">
+        <div className="absolute inset-0 bg-black/10" />
+        <div className="relative z-10 flex items-center text-white">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="mr-2 h-6 w-6"
+          >
+            <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
+          </svg>
+          <span className="text-xl font-bold tracking-tight">DSM-UI</span>
+        </div>
+      </div>
+
+      {/* 右侧表单区域 */}
       <Card className="border-none shadow-none md:rounded-none md:rounded-r-lg md:border-0 md:shadow-none">
-        <CardHeader className="space-y-1 pb-6">
+        <CardHeader className="space-y-1 pt-6 pb-4 md:pb-6">
           <CardTitle className="text-center text-2xl font-bold tracking-tight">
             {translations.title}
           </CardTitle>
@@ -257,7 +279,7 @@ export function LoginForm({ locale, translations, className }: LoginFormProps) {
           </form>
           <div className="border-muted-foreground/10 bg-muted/30 text-muted-foreground mt-6 rounded-lg border p-4 text-center text-sm">
             <p className="font-medium">测试账号</p>
-            <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+            <div className="mt-2 grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
               <div className="bg-muted/50 rounded-md p-2">
                 <span className="font-semibold">用户名:</span> admin, manager, user
               </div>
