@@ -1,5 +1,5 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@radix-ui/react-avatar";
-import { ChevronsUpDown, Sparkles, BadgeCheck, CreditCard, Bell, LogOut } from "lucide-react";
+import { ChevronsUpDown, Sparkles, BadgeCheck, CreditCard, Bell, LogOut, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,16 +11,30 @@ import {
 } from "../ui/dropdown-menu";
 import { SidebarMenuButton } from "../ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+
 interface NavUserProps {
   user: any;
   onLogout: () => void;
 }
+
 export function NavUser({ user, onLogout }: NavUserProps) {
   const isMobile = useIsMobile();
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
+
   // 处理登出
   const handleLogout = async () => {
     onLogout();
   };
+
+  // 跳转到个人中心
+  const goToProfile = () => {
+    router.push(`/${locale}/profile`);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -63,15 +77,19 @@ export function NavUser({ user, onLogout }: NavUserProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
+          <DropdownMenuItem onClick={goToProfile}>
+            <User className="mr-2 h-4 w-4" />
+            个人中心
+          </DropdownMenuItem>
           <DropdownMenuItem>
-            <BadgeCheck />
-            Account
+            <Bell className="mr-2 h-4 w-4" />
+            消息通知
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
-          <LogOut />
-          Log out
+          <LogOut className="mr-2 h-4 w-4" />
+          退出登录
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

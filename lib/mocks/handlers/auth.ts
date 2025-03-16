@@ -39,6 +39,16 @@ const menuItems: MenuItem[] = [
     icon: "badge-info",
   },
   {
+    id: 8,
+    parentId: null,
+    menuName: "profile",
+    orderNum: 2,
+    path: "/profile",
+    frame: false,
+    cache: true,
+    icon: "user",
+  },
+  {
     id: 4,
     parentId: null,
     menuName: "system",
@@ -99,6 +109,7 @@ const userInfos: UserInfo[] = [
       "about:view",
       "menu:view",
       "system:view",
+      "profile:view",
     ],
     menus: menuItems,
   },
@@ -111,7 +122,7 @@ const userInfos: UserInfo[] = [
     sex: "1",
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=manager",
     authorities: ["manager"],
-    permissions: ["dashboard:view", "home:view", "user:view", "dept:view"],
+    permissions: ["dashboard:view", "home:view", "user:view", "dept:view", "profile:view"],
     menus: menuItems.filter((item) => item.id !== 7), // 管理员没有菜单管理权限
   },
   {
@@ -123,7 +134,7 @@ const userInfos: UserInfo[] = [
     sex: "0",
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=user",
     authorities: ["user"],
-    permissions: ["dashboard:view", "home:view"],
+    permissions: ["dashboard:view", "home:view", "profile:view"],
     menus: menuItems.filter((item) => ![5, 6, 7].includes(item.id)), // 普通用户只有工作台权限
   },
 ];
@@ -261,7 +272,7 @@ export default [
   }),
 
   // 获取当前用户信息
-  http.get(`${BASE_URL}/users/me`, ({ request }) => {
+  http.get(`${BASE_URL}/users/current`, ({ request }) => {
     console.log("👤 获取当前用户信息");
     const authHeader = request.headers.get("Authorization");
 
@@ -282,8 +293,79 @@ export default [
         return HttpResponse.json(createErrorResponse("用户不存在", 404), { status: 404 });
       }
 
-      console.log(`✅ 获取用户成功: ${userInfo.username}`);
-      return HttpResponse.json(createSuccessResponse(userInfo));
+      // 返回用户信息（不包含敏感数据）
+      const safeUserInfo = {
+        id: userInfo.id,
+        username: userInfo.username,
+        nickname: userInfo.nickname,
+        email: userInfo.email,
+        phone: userInfo.phone,
+        sex: userInfo.sex,
+        avatar: userInfo.avatar,
+        authorities: userInfo.authorities,
+      };
+
+      console.log(`✅ 获取当前用户信息成功: ${userInfo.username}`);
+      return HttpResponse.json(createSuccessResponse(safeUserInfo));
+    } catch (error) {
+      console.log("❌ 无效的令牌");
+      return HttpResponse.json(createErrorResponse("无效的令牌", 401), { status: 401 });
+    }
+  }),
+
+  // 更新当前用户信息
+  http.put(`${BASE_URL}/users/current`, async ({ request }) => {
+    console.log("✏️ 更新当前用户信息");
+    const authHeader = request.headers.get("Authorization");
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.log("❌ 未授权");
+      return HttpResponse.json(createErrorResponse("未授权", 401), { status: 401 });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    try {
+      const decoded = verify(token, JWT_SECRET) as { sub: string; authorities?: string[] };
+      const userId = decoded.sub;
+
+      // 查找用户
+      const userIndex = userInfos.findIndex((u) => u.id.toString() === userId);
+      if (userIndex === -1) {
+        console.log("❌ 用户不存在");
+        return HttpResponse.json(createErrorResponse("用户不存在", 404), { status: 404 });
+      }
+
+      // 获取请求体
+      const body = (await request.json()) as Record<string, any>;
+
+      // 只允许更新特定字段
+      const allowedFields = ["nickname", "email", "phone", "sex", "avatar"];
+      const userToUpdate = userInfos[userIndex];
+
+      allowedFields.forEach((field) => {
+        if (body[field] !== undefined) {
+          (userToUpdate as any)[field] = body[field];
+        }
+      });
+
+      // 更新用户信息
+      userInfos[userIndex] = userToUpdate;
+
+      // 返回更新后的用户信息
+      const safeUserInfo = {
+        id: userToUpdate.id,
+        username: userToUpdate.username,
+        nickname: userToUpdate.nickname,
+        email: userToUpdate.email,
+        phone: userToUpdate.phone,
+        sex: userToUpdate.sex,
+        avatar: userToUpdate.avatar,
+        authorities: userToUpdate.authorities,
+      };
+
+      console.log(`✅ 更新用户信息成功: ${userToUpdate.username}`);
+      return HttpResponse.json(createSuccessResponse(safeUserInfo));
     } catch (error) {
       console.log("❌ 无效的令牌");
       return HttpResponse.json(createErrorResponse("无效的令牌", 401), { status: 401 });
