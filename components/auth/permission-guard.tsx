@@ -1,5 +1,5 @@
 import React from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useUser } from "@/hooks/useUser";
 
 interface PermissionGuardProps {
   children: React.ReactNode;
@@ -18,7 +18,7 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   authorities = [],
   fallback = null,
 }) => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading } = useUser();
 
   // 如果正在加载用户信息，不显示任何内容
   if (isLoading) {

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import { useCurrentLocale } from "@/lib/i18n-utils";
-import { useAuth } from "@/hooks/useAuth";
+import { useUser } from "@/hooks/useUser";
 import { LocaleLink } from "@/components/locale-link";
 import { cn } from "@/lib/utils";
 import { MenuItem } from "@/lib/types";
@@ -97,7 +97,7 @@ function renderMenuItems(
 export function AppSidebar() {
   const locale = useCurrentLocale();
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout } = useUser();
 
   // 如果用户未登录或没有菜单数据，显示基本菜单
   const defaultMenuItems: MenuItem[] = [

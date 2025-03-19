@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
+import { useUser } from "@/hooks/useUser";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,7 @@ type LoginFormProps = {
 
 export function LoginForm({ locale, translations, className }: LoginFormProps) {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, error: loginError, isLoading: isAuthLoading } = useUser();
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [formData, setFormData] = React.useState({
@@ -42,6 +42,13 @@ export function LoginForm({ locale, translations, className }: LoginFormProps) {
     password: "",
     rememberMe: false,
   });
+
+  // 当认证错误发生变化时，更新本地错误状态
+  React.useEffect(() => {
+    if (loginError) {
+      setError(loginError);
+    }
+  }, [loginError]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -60,7 +67,7 @@ export function LoginForm({ locale, translations, className }: LoginFormProps) {
     try {
       console.log("提交登录表单:", formData);
 
-      // 使用AuthContext中的login方法进行登录
+      // 使用useUser中的login方法进行登录
       await login({
         username: formData.username,
         password: formData.password,
@@ -75,6 +82,9 @@ export function LoginForm({ locale, translations, className }: LoginFormProps) {
       setIsLoading(false);
     }
   }
+
+  // 设置实际的加载状态
+  const isLoadingState = isLoading || isAuthLoading;
 
   return (
     <div
@@ -194,7 +204,7 @@ export function LoginForm({ locale, translations, className }: LoginFormProps) {
                   autoCapitalize="none"
                   autoComplete="username"
                   autoCorrect="off"
-                  disabled={isLoading}
+                  disabled={isLoadingState}
                   value={formData.username}
                   onChange={handleChange}
                   required
@@ -221,7 +231,7 @@ export function LoginForm({ locale, translations, className }: LoginFormProps) {
                   autoCapitalize="none"
                   autoComplete="current-password"
                   autoCorrect="off"
-                  disabled={isLoading}
+                  disabled={isLoadingState}
                   value={formData.password}
                   onChange={handleChange}
                   required
@@ -244,11 +254,11 @@ export function LoginForm({ locale, translations, className }: LoginFormProps) {
               </div>
             </div>
             <Button
-              disabled={isLoading}
+              disabled={isLoadingState}
               type="submit"
               className="h-11 w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white transition-all hover:from-blue-700 hover:to-indigo-700 dark:from-blue-700 dark:to-indigo-700 dark:hover:from-blue-800 dark:hover:to-indigo-800"
             >
-              {isLoading ? (
+              {isLoadingState ? (
                 <div className="flex items-center justify-center">
                   <svg
                     className="mr-2 h-4 w-4 animate-spin"

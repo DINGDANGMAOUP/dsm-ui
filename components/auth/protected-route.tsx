@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
+import { useUser } from "@/hooks/useUser";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -21,7 +21,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isLoading, isAuthenticated } = useUser();
 
   // 获取当前语言
   const getCurrentLocale = () => {

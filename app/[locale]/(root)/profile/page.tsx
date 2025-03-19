@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api/client";
 import { UserInfo } from "@/lib/types";
+import { useUser } from "@/hooks/useUser";
 import {
   Card,
   CardContent,
@@ -28,8 +29,10 @@ import { toast } from "sonner";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [user, setUser] = useState<Partial<UserInfo> | null>(null);
-  const [loading, setLoading] = useState(true);
+
+  // 直接使用zustand状态中的用户数据
+  const { user: currentUser, isLoading, refreshUserInfo } = useUser();
+
   const [updating, setUpdating] = useState(false);
   const [formData, setFormData] = useState({
     nickname: "",
@@ -39,34 +42,18 @@ export default function ProfilePage() {
     avatar: "",
   });
 
-  // 获取用户信息
+  // 当用户数据加载完成后，设置表单数据
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get<Partial<UserInfo>>("/users/current");
-        if (response.success && response.data) {
-          setUser(response.data);
-          setFormData({
-            nickname: response.data.nickname || "",
-            email: response.data.email || "",
-            phone: response.data.phone || "",
-            sex: response.data.sex || "",
-            avatar: response.data.avatar || "",
-          });
-        } else {
-          toast.error("获取用户信息失败");
-        }
-      } catch (error) {
-        console.error("获取用户信息失败:", error);
-        toast.error("获取用户信息失败");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserInfo();
-  }, []);
+    if (currentUser) {
+      setFormData({
+        nickname: currentUser.nickname || "",
+        email: currentUser.email || "",
+        phone: currentUser.phone || "",
+        sex: currentUser.sex || "",
+        avatar: currentUser.avatar || "",
+      });
+    }
+  }, [currentUser]);
 
   // 处理表单变更
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,9 +78,10 @@ export default function ProfilePage() {
     setUpdating(true);
 
     try {
-      const response = await api.put<Partial<UserInfo>>("/users/current", formData);
+      const response = await api.put<Partial<UserInfo>>("/users/me", formData);
       if (response.success && response.data) {
-        setUser(response.data);
+        // 刷新用户信息
+        await refreshUserInfo();
         toast.success("个人信息更新成功");
       } else {
         toast.error(response.message || "更新失败");
@@ -106,7 +94,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
@@ -130,33 +118,35 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent className="flex flex-col items-center">
             <Avatar className="mb-4 h-24 w-24">
-              <AvatarImage src={user?.avatar} alt={user?.nickname} />
+              <AvatarImage src={currentUser?.avatar} alt={currentUser?.nickname} />
               <AvatarFallback>
-                {user?.nickname?.slice(0, 2) || user?.username?.slice(0, 2)}
+                {currentUser?.nickname?.slice(0, 2) || currentUser?.username?.slice(0, 2)}
               </AvatarFallback>
             </Avatar>
-            <h3 className="text-xl font-medium">{user?.nickname}</h3>
-            <p className="text-muted-foreground mt-1 text-sm">@{user?.username}</p>
+            <h3 className="text-xl font-medium">{currentUser?.nickname}</h3>
+            <p className="text-muted-foreground mt-1 text-sm">@{currentUser?.username}</p>
             <div className="mt-4 w-full">
               <div className="flex justify-between border-b py-2">
                 <span className="text-muted-foreground">账号</span>
-                <span>{user?.username}</span>
+                <span>{currentUser?.username}</span>
               </div>
               <div className="flex justify-between border-b py-2">
                 <span className="text-muted-foreground">角色</span>
-                <span>{user?.authorities?.join(", ")}</span>
+                <span>{currentUser?.authorities?.join(", ")}</span>
               </div>
               <div className="flex justify-between border-b py-2">
                 <span className="text-muted-foreground">邮箱</span>
-                <span>{user?.email}</span>
+                <span>{currentUser?.email}</span>
               </div>
               <div className="flex justify-between border-b py-2">
                 <span className="text-muted-foreground">手机</span>
-                <span>{user?.phone}</span>
+                <span>{currentUser?.phone}</span>
               </div>
               <div className="flex justify-between py-2">
                 <span className="text-muted-foreground">性别</span>
-                <span>{user?.sex === "1" ? "男" : user?.sex === "0" ? "女" : "未设置"}</span>
+                <span>
+                  {currentUser?.sex === "1" ? "男" : currentUser?.sex === "0" ? "女" : "未设置"}
+                </span>
               </div>
             </div>
           </CardContent>
@@ -232,7 +222,7 @@ export default function ProfilePage() {
                     <Avatar className="h-32 w-32">
                       <AvatarImage src={formData.avatar} />
                       <AvatarFallback>
-                        {user?.nickname?.slice(0, 2) || user?.username?.slice(0, 2)}
+                        {currentUser?.nickname?.slice(0, 2) || currentUser?.username?.slice(0, 2)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="w-full space-y-2">

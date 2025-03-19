@@ -272,7 +272,7 @@ export default [
   }),
 
   // 获取当前用户信息
-  http.get(`${BASE_URL}/users/current`, ({ request }) => {
+  http.get(`${BASE_URL}/users/me`, ({ request }) => {
     console.log("👤 获取当前用户信息");
     const authHeader = request.headers.get("Authorization");
 
@@ -293,29 +293,17 @@ export default [
         return HttpResponse.json(createErrorResponse("用户不存在", 404), { status: 404 });
       }
 
-      // 返回用户信息（不包含敏感数据）
-      const safeUserInfo = {
-        id: userInfo.id,
-        username: userInfo.username,
-        nickname: userInfo.nickname,
-        email: userInfo.email,
-        phone: userInfo.phone,
-        sex: userInfo.sex,
-        avatar: userInfo.avatar,
-        authorities: userInfo.authorities,
-      };
-
       console.log(`✅ 获取当前用户信息成功: ${userInfo.username}`);
-      return HttpResponse.json(createSuccessResponse(safeUserInfo));
+      return HttpResponse.json(createSuccessResponse(userInfo));
     } catch (error) {
       console.log("❌ 无效的令牌");
       return HttpResponse.json(createErrorResponse("无效的令牌", 401), { status: 401 });
     }
   }),
 
-  // 更新当前用户信息
-  http.put(`${BASE_URL}/users/current`, async ({ request }) => {
-    console.log("✏️ 更新当前用户信息");
+  // 更新当前用户信息 - 新接口路径
+  http.put(`${BASE_URL}/users/me`, async ({ request }) => {
+    console.log("✏️ 更新当前用户信息 - /users/me");
     const authHeader = request.headers.get("Authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -352,20 +340,8 @@ export default [
       // 更新用户信息
       userInfos[userIndex] = userToUpdate;
 
-      // 返回更新后的用户信息
-      const safeUserInfo = {
-        id: userToUpdate.id,
-        username: userToUpdate.username,
-        nickname: userToUpdate.nickname,
-        email: userToUpdate.email,
-        phone: userToUpdate.phone,
-        sex: userToUpdate.sex,
-        avatar: userToUpdate.avatar,
-        authorities: userToUpdate.authorities,
-      };
-
       console.log(`✅ 更新用户信息成功: ${userToUpdate.username}`);
-      return HttpResponse.json(createSuccessResponse(safeUserInfo));
+      return HttpResponse.json(createSuccessResponse(userToUpdate));
     } catch (error) {
       console.log("❌ 无效的令牌");
       return HttpResponse.json(createErrorResponse("无效的令牌", 401), { status: 401 });

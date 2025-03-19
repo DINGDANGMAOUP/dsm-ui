@@ -1,6 +1,5 @@
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import AuthProvider from "@/lib/auth/AuthContext";
 import { locales } from "@/lib/dictionaries";
 
 export async function generateStaticParams() {
@@ -14,10 +13,8 @@ export default async function LocaleLayout({
 }>) {
   return (
     <div className="contents">
-      <AuthProvider>
-        {children}
-        <Toaster />
-      </AuthProvider>
+      {children}
+      <Toaster />
     </div>
   );
 }

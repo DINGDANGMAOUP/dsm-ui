@@ -1,7 +1,7 @@
 "use client";
 
 import { LocaleLink } from "@/components/locale-link";
-import { useAuth } from "@/hooks/useAuth";
+import { useUser } from "@/hooks/useUser";
 
 type DashboardClientProps = {
   locale: string;
@@ -20,7 +20,7 @@ type DashboardClientProps = {
 };
 
 export default function DashboardClient({ locale, translations }: DashboardClientProps) {
-  const { user, logout, isLoading } = useAuth();
+  const { user, logout, isLoading } = useUser();
 
   // 处理登出
   const handleLogout = async () => {
